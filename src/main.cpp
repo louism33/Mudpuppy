@@ -24,10 +24,10 @@ int main() {
     setupAttacksDatabase();
 
 //    tests();
-    speedTests();
+//    speedTests();
 
 //    playEngineGames();
-//    playPlayerGames();
+    playPlayerGames();
 
     return 0;
 }
@@ -128,7 +128,7 @@ int playPlayerGames() {
 //        engine = new EngineRandom("Engine Random");
 //        engine = new EngineMinimax(8, true, new EvalSimpleCount, "Engine Minimax with Simple Count");
 //        engine = new EngineMinimax(x, false, new EvalSimpleCount, "Engine Minimax with Simple Count");
-        engine = new EngineMinimax(10, true, new EvalBasicHeuristics, "Engine Minimax with BasicHeuristics");
+        engine = new EngineMinimax(12, true, new EvalBasicHeuristics, "Engine Minimax with BasicHeuristics");
 
         cout << "mudpuppy v0.1 by Louis James Mackenzie-Smith" << endl;
         cout << "id name mudpuppy v0.1" << endl;
