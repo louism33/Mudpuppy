@@ -15,7 +15,7 @@
 
 class EngineBase{
 public:
-    std::string *name;
+    std::string name;
 
     virtual unsigned int getDisplayScoreOfMove(Board &board) = 0;
 

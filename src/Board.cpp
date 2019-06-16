@@ -50,10 +50,10 @@ Board::Board(const Board &b) {
 bool boardReady = false;
 
 void setup() {
-    if (boardReady) {
-        cout << "board already ready" << endl;
-        return;
-    }
+//    if (boardReady) {
+//        cout << "board already ready" << endl;
+//        return;
+//    }
     setupStarMask();
     whiteStackP = new long[64];
     blackStackP = new long[64];
@@ -109,6 +109,8 @@ void Board::makeMove(unsigned int index) {
 }
 
 void Board::makeMove(Colour t, int index) {
+    setupAttacksDatabase();
+
     assert(index >= 0);
     assert(index <= 63);
     const bool w = t == WHITE;
@@ -123,7 +125,7 @@ void Board::makeMove(Colour t, int index) {
     unsigned long piece = newPieceOnSquare(index);
     unsigned long caps = ::getMoveCaptures(index, friends, enemies);
 
-//    assert(caps);
+    assert(caps);
 
 //    unsigned long bw = this->whitePieces;
 //    unsigned long bb = this->blackPieces;

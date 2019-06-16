@@ -9,32 +9,39 @@
 #include <algorithm>
 #include <sstream>
 #include <iostream>
-#include "../main.h"
-#include "../Art.h"
-#include "../Board.h"
 #include "../searchUtils/Extensions.h"
+#include "../searchUtils/TimeManagement.h"
+#include "../protocols/Uci.h"
+#include "../Art.h"
+#include "../main.h"
+#include "../Board.h"
 
 using namespace std;
 
-unsigned long aiMoveLong;
-int aiMoveScore;
 
-EngineMinimaxBetter::EngineMinimaxBetter(int maxDepth, bool print, EvalBase *evaluator, string name) {
-    this->maxDepth = maxDepth;
-    this->print = print;
+unsigned long aiMoveLong;
+int aiMoveScore = 0;
+bool running = false;
+
+EngineMinimaxBetter::EngineMinimaxBetter(int maxDepth, bool printInfo, EvalBase *evaluator, string name,
+                                         TimePoint timeLimit) {
+    this->maxDepth = maxDepth != 0 ? maxDepth : absoluteMaxDepth;
+    this->printInfo = printInfo;
+    this->printDebug = false;
     this->evaluator = evaluator;
-    this->name = &name;
+    this->name = name;
+    this->timeLimit = timeLimit;
 }
 
 unsigned int EngineMinimaxBetter::getBestMoveInt(Board &board) {
     return getIndexLowestBit(getBestMove(board));
 }
 
-unsigned int EngineMinimaxBetter::getDisplayScoreOfMove(Board &board){
+unsigned int EngineMinimaxBetter::getDisplayScoreOfMove(Board &board) {
     return aiMoveScore;
 }
 
-unsigned long getNps(long nodes, long time){
+unsigned long getNps(long nodes, long time) {
     if (time == 0) {
         return 0;
     }
@@ -43,38 +50,37 @@ unsigned long getNps(long nodes, long time){
 
 
 static unsigned long totalNodes = 0;
-void reset(){
+
+void reset() {
     totalNodes = 0;
 }
+
 unsigned long EngineMinimaxBetter::getBestMove(Board &board) {
     reset();
 
     aiMoveScore = 0;
     aiMoveLong = -1;
 
-    chrono::milliseconds startTime = std::chrono::duration_cast<std::chrono::milliseconds>(
-            std::chrono::system_clock::now().time_since_epoch()
-    );
+    this->startTime = now();
+
+    this->stopTime = this->timeLimit + startTime;
+
+    running = true;
 
     iterativeDeepeningSearch(board);
 
-    if (this->print){
-        chrono::milliseconds currentTime = std::chrono::duration_cast<std::chrono::milliseconds>(
-                std::chrono::system_clock::now().time_since_epoch()
-        );
+    running = false;
 
-        long finalTime = currentTime.count() - startTime.count();
+    if (this->printDebug) {
+        TimePoint currentTime = now();
+
+        long finalTime = currentTime - startTime;
         cout << "\nThe search lasted " << finalTime << " milliseconds." << endl;
         cout << "NPS: " << getNps(totalNodes, finalTime) << endl;
     }
 
     unsigned int moveIndex = getIndexLowestBit(aiMoveLong);
 
-    if (moveIndex < 0 || moveIndex > 63) {
-        printBoardWithIndexAndLegalMoves(board);
-        printLong(aiMoveLong);
-        cout << aiMoveScore << endl;
-    }
     assert(moveIndex >= 0);
     assert(moveIndex <= 63);
     assert(popCount(aiMoveLong) == 1);
@@ -82,24 +88,49 @@ unsigned long EngineMinimaxBetter::getBestMove(Board &board) {
     return aiMoveLong;
 }
 
-unsigned long EngineMinimaxBetter::iterativeDeepeningSearch(Board &board) {
-
-    for (int d = 1; d <= maxDepth; ++d) {
-//        cout << d << endl;
-//        cout << maxDepth << endl;
-//        cout << "\n" << endl;
+bool EngineMinimaxBetter::stopSearch() {
+    if (!running) {
+        return true;
     }
-//    cout << maxDepth << endl;
+    bool b = now() > this->stopTime - 1;
+    if (b) {
+        running = false;
+        cout << "time to stop" << endl;
+    }
+    return b;
+}
 
+unsigned long EngineMinimaxBetter::iterativeDeepeningSearch(Board &board) {
     unsigned long bestMove = 0;
     int bestScore, initialAlpha = EvalBase::SHORT_MIN, initialBeta = EvalBase::SHORT_MAX;
 
-    bestScore = principleVariationSearch(board, maxDepth, 0, initialAlpha, initialBeta, false);
+    int depth = 0;
 
-    if (print){
-        cout << "best move found: " + getMoveStringFromMove(aiMoveLong) << endl;
-        cout << "best score: " + to_string(aiMoveScore) << endl;
+    while (running){
+        depth++;
+        bestScore = principleVariationSearch(board, depth, 0, initialAlpha, initialBeta, false);
+
+        if (printInfo) {
+            TimePoint n = now();
+            sendInfoString(depth, aiMoveScore, getNps(totalNodes, n - this->startTime), n,
+                           aiMoveLong);
+        }
+
+        if (stopSearch()) {
+            assert(!running);
+            if (printDebug) {
+                cout << "out of time ids" << endl;
+            }
+            break;
+        }
     }
+
+    if (printInfo) {
+//        sendInfoString(depth, aiMoveScore, getNps(totalNodes, now() - this->startTime),
+//                       now(), aiMoveLong);
+        sendBestMove(aiMoveLong);
+    }
+
 
     return bestMove;
 }
@@ -112,7 +143,7 @@ EngineMinimaxBetter::principleVariationSearch(Board &board, int depth, int ply, 
     if (ex) {
         extended = true;
     }
-    depth += 2*ex;
+    depth += 2 * ex;
 
     if (depth <= 0) {
         return evaluator->eval(board, moves);
@@ -122,7 +153,7 @@ EngineMinimaxBetter::principleVariationSearch(Board &board, int depth, int ply, 
     unsigned long bestMove = 0;
     int score = 0, bestScore = EvalBase::SHORT_MIN, movesMade = 0;
 
-    if (moves == 0){
+    if (moves == 0) {
 
         board.flipTurn();
         unsigned long opponentMoves = board.generateLegalMoves();
@@ -150,54 +181,54 @@ EngineMinimaxBetter::principleVariationSearch(Board &board, int depth, int ply, 
             bestScore = score;
             bestMove = move;
             if (ply == 0) {
-//                cout << "was " << aiMoveScore << " is now " << bestScore << endl;
                 aiMoveLong = bestMove;
                 aiMoveScore = bestScore;
             }
         }
 
     } else {
-        while (moves) { // we could actually do delta move here - iterate through neighbours, call getMoveForPiece, != 0 etc...
+        while (moves) {
             move = moves & -moves;
 
             assert(move);
 
             unsigned int moveIndex = getIndexLowestBit(move);
 
-//            auto b = Board(board);
-//            auto board = Board(board);
             board.makeMove(moveIndex);
+
             movesMade++;
             totalNodes++;
+
             score = -principleVariationSearch(board, depth - 1, ply + 1, -beta, -alpha, extended);
+
             board.unMakeMove();
+
+            if (!running || stopSearch()) {
+                return 0;
+            }
+
             if (score > bestScore) {
                 bestScore = score;
                 bestMove = move;
-                if (score > alpha){
+                if (score > alpha) {
                     alpha = score;
                 }
                 if (ply == 0) {
-//                    cout << "was " << aiMoveScore << " is now " << bestScore << endl;
                     aiMoveLong = bestMove;
                     aiMoveScore = bestScore;
                 }
             }
 
-            if (alpha >= beta){
+            if (alpha >= beta) {
                 break;
             }
 
             moves &= moves - 1;
         }
-
     }
 
-
-    if (movesMade == 0) {
-        // todo check for CM etc, extension
-//        printBoardWithIndexAndLegalMoves(board);
-        int x = 0;
+    if (now() > this->stopTime) {
+        return 0;
     }
 
 

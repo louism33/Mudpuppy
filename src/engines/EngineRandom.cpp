@@ -19,7 +19,7 @@ std::random_device dev;
 std::mt19937 rng(dev());
 
 EngineRandom::EngineRandom(std::string name) {
-    this->name = &name;
+    this->name = name;
 }
 
 unsigned int EngineRandom::getBestMoveInt(Board &board) {

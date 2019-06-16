@@ -19,12 +19,18 @@ using namespace std;
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "OCSimplifyInspection"
 
-
 int main() {
-    setupAttacksDatabase();
-
 //    tests();
 //    speedTests();
+
+//    EngineBase *engine;
+//
+//    Board board;
+//    engine = new EngineMinimaxBetter(0, true, new EvalBasicHeuristics,
+//                                          "Engine Minimax Better with BasicHeuristics",
+//                                          1000);
+//
+//    unsigned int i = engine->getBestMove(board);
 
 //    playEngineGames();
     playPlayerGames();
@@ -42,7 +48,7 @@ int main() {
 
 int playEngineGames() {
 
-    int x = 2;
+    int x = 1;
 
     EngineBase *engine1;
     EngineBase *engine2;
@@ -54,7 +60,8 @@ int playEngineGames() {
 //        engine1 = new EngineMinimax(x, false, new EvalSimpleCount, "Engine Minimax with Simple Count");
 //        engine1 = new EngineMinimax(x, enginePrint, new EvalBasicHeuristics, "Engine Minimax with BasicHeuristics");
         engine1 = new EngineMinimaxBetter(x, enginePrint, new EvalBasicHeuristics,
-                                          "Engine Minimax Better with BasicHeuristics");
+                                          "Engine Minimax Better with BasicHeuristics",
+                                          1000);
 
         engine2 = new EngineRandom("Engine Random");
 //        engine2 = new EngineMinimax(x, enginePrint, new EvalSimpleCount, "Engine Minimax with Simple Count");
@@ -110,6 +117,9 @@ int playEngineGames() {
         }
         x = x + 1;
         cout << "The game has ended." << endl;
+//        if (x == 3) {
+//            break;
+//        }
 //        break;
 
     }
@@ -128,7 +138,8 @@ int playPlayerGames() {
 //        engine = new EngineRandom("Engine Random");
 //        engine = new EngineMinimax(8, true, new EvalSimpleCount, "Engine Minimax with Simple Count");
 //        engine = new EngineMinimax(x, false, new EvalSimpleCount, "Engine Minimax with Simple Count");
-        engine = new EngineMinimax(12, true, new EvalBasicHeuristics, "Engine Minimax with BasicHeuristics");
+//        engine = new EngineMinimax(12, true, new EvalBasicHeuristics, "Engine Minimax with BasicHeuristics");
+        engine = new EngineMinimaxBetter(0, true, new EvalBasicHeuristics, "Engine Minimax with BasicHeuristics", 5000);
 
         cout << "mudpuppy v0.1 by Louis James Mackenzie-Smith" << endl;
         cout << "id name mudpuppy v0.1" << endl;

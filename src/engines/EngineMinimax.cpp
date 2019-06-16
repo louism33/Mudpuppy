@@ -21,7 +21,7 @@ EngineMinimax::EngineMinimax(int maxDepth, bool print, EvalBase *evaluator, stri
     this->maxDepth = maxDepth;
     this->print = print;
     this->evaluator = evaluator;
-    this->name = &name;
+    this->name = name;
 }
 
 unsigned int EngineMinimax::getBestMoveInt(Board &board) {
