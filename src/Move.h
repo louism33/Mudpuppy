@@ -9,9 +9,11 @@
 #include <string>
 #include <vector>
 
+const unsigned long PASS_MOVE = 0xffffffffffffffff;
+
 unsigned long getMoveForPiece(unsigned long piece, unsigned long friends, unsigned long enemies);
 
-std::vector<long> getMovesAsArray(unsigned long moves);
+void getMovesAsArray(unsigned long *array, unsigned long moves);
 
 std::vector<std::string> getMovesAsArrayString(unsigned long moves);
 

@@ -10,10 +10,9 @@
 
 
 class EvalBasicHeuristics : public EvalBase{
-
+public:
     int eval(const Board &board, unsigned long moves);
 
-    int evalTurn(const Board &board);
 };
 
 

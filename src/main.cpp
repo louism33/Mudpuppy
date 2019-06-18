@@ -22,18 +22,44 @@ using namespace std;
 int main() {
 //    tests();
 //    speedTests();
+    Board board;
 
-//    EngineBase *engine;
-//
-//    Board board;
-//    engine = new EngineMinimaxBetter(0, true, new EvalBasicHeuristics,
-//                                          "Engine Minimax Better with BasicHeuristics",
-//                                          1000);
-//
-//    unsigned int i = engine->getBestMove(board);
+
+    if (false){
+        EvalBasicHeuristics evaluator;
+        unsigned long moves = board.generateLegalMoves();
+//        printBoard(board);
+        int eval = evaluator.eval(board, moves);
+        cout << eval << endl;
+    }
+    if (false){
+        string m = "d3";
+        board.makeMoveS(&m);
+//        printBoard(board);
+        EvalBasicHeuristics evaluator;
+        unsigned long moves = board.generateLegalMoves();
+        int eval = evaluator.eval(board, moves);
+        cout << eval << endl;
+    }
+
+    if (true) {
+        EngineBase *engine;
+
+        engine = new EngineMinimaxBetter(0, true, new EvalBasicHeuristics,
+                                         "Engine Minimax Better with BasicHeuristics",
+                                         10000000);
+
+
+        unsigned int i = engine->getBestMove(board);
+    }
+
+//    unsigned long moves = board.generateLegalMoves();
+//    printBoard(board);
+//    board.makeMoveLong(board.turn, moves & -moves);
+//    printBoard(board);
 
 //    playEngineGames();
-    playPlayerGames();
+//    playPlayerGames();
 
     return 0;
 }
@@ -185,13 +211,13 @@ int playPlayerGames() {
                          << ", and suggests this board is worth: " << engine->getDisplayScoreOfMove(board)
                          << " on a scale of -100 to +100 " << endl;
 
-                } else if (userMove == "r"){
+                } else if (userMove == "r") {
                     EngineRandom engineRandom("random engine");
                     unsigned int move = engineRandom.getBestMoveInt(board);
                     cout << "Random Engine makes move: " + getMoveStringFromMove(newPieceOnSquare(move)) << endl;
                     board.makeMove(move);
                     break;
-                }else if (std::find(moveVec.begin(), moveVec.end(), userMove) != moveVec.end()) {
+                } else if (std::find(moveVec.begin(), moveVec.end(), userMove) != moveVec.end()) {
                     cout << "Making user move: " + userMove << endl;
                     board.makeMoveS(&userMove);
                     break;

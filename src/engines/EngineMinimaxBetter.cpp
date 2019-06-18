@@ -15,6 +15,8 @@
 #include "../Art.h"
 #include "../main.h"
 #include "../Board.h"
+#include "../Move.h"
+#include "../searchUtils/MoveOrderer.h"
 
 using namespace std;
 
@@ -22,6 +24,7 @@ using namespace std;
 unsigned long aiMoveLong;
 int aiMoveScore = 0;
 bool running = false;
+unsigned long movesArray[64][32];
 
 EngineMinimaxBetter::EngineMinimaxBetter(int maxDepth, bool printInfo, EvalBase *evaluator, string name,
                                          TimePoint timeLimit) {
@@ -31,6 +34,7 @@ EngineMinimaxBetter::EngineMinimaxBetter(int maxDepth, bool printInfo, EvalBase 
     this->evaluator = evaluator;
     this->name = name;
     this->timeLimit = timeLimit;
+//    this->movesArray = new unsigned long[64][32];
 }
 
 unsigned int EngineMinimaxBetter::getBestMoveInt(Board &board) {
@@ -100,15 +104,16 @@ bool EngineMinimaxBetter::stopSearch() {
     return b;
 }
 
+
 unsigned long EngineMinimaxBetter::iterativeDeepeningSearch(Board &board) {
     unsigned long bestMove = 0;
     int bestScore, initialAlpha = EvalBase::SHORT_MIN, initialBeta = EvalBase::SHORT_MAX;
 
     int depth = 0;
 
-    while (running){
+    while (running) {
         depth++;
-        bestScore = principleVariationSearch(board, depth, 0, initialAlpha, initialBeta, false);
+        bestScore = principleVariationSearch(board, depth, 0, initialAlpha, initialBeta, false, false);
 
         if (printInfo) {
             TimePoint n = now();
@@ -136,8 +141,10 @@ unsigned long EngineMinimaxBetter::iterativeDeepeningSearch(Board &board) {
 }
 
 unsigned long
-EngineMinimaxBetter::principleVariationSearch(Board &board, int depth, int ply, int alpha, int beta, bool extended) {
+EngineMinimaxBetter::principleVariationSearch(Board &board, int depth, int ply, int alpha, int beta, bool extended,
+                                              bool passed) {
     unsigned long moves = board.generateLegalMoves();
+    unsigned int movesMadeInGame = board.numberOfMoves;
 
     unsigned int ex = extended ? 0 : getExtension(board, moves);
     if (ex) {
@@ -149,82 +156,60 @@ EngineMinimaxBetter::principleVariationSearch(Board &board, int depth, int ply, 
         return evaluator->eval(board, moves);
     }
 
-    unsigned long move = 0;
     unsigned long bestMove = 0;
-    int score = 0, bestScore = EvalBase::SHORT_MIN, movesMade = 0;
+    int m = 0, score = 0, bestScore = EvalBase::SHORT_MIN, movesMade = 0;
 
-    if (moves == 0) {
+    getOrderedMovesAsArray(movesArray[movesMadeInGame], moves);
+    unsigned long move = 0;
+    for (m = 1; m < movesArray[movesMadeInGame][0]; m++) {
+        move = movesArray[movesMadeInGame][m];
+        if (move == 0) {
+            break;
+        }
+        bool passingMove = move == PASS_MOVE;
 
-        board.flipTurn();
-        unsigned long opponentMoves = board.generateLegalMoves();
-        board.flipTurn();
-
-        if (opponentMoves == 0) {
-            unsigned long m = board.getMyPieces();
+        if (passingMove && passed) {
+            unsigned long me = board.getMyPieces();
             unsigned long u = board.getEnemyPieces();
-
-            if (m == u) {
+            if (me == u) {
                 return EvalBase::DRAW_SCORE;
             }
-            if (m > u) {
+            if (me > u) {
                 return EvalBase::CHECKMATE_SCORE;
             }
-
             return EvalBase::IN_CHECKMATE_SCORE;
         }
 
-        board.flipTurn();
-        score = -principleVariationSearch(board, depth - 1, ply + 1, -beta, -alpha, extended);
-        board.flipTurn();
+        unsigned int moveIndex = getIndexLowestBit(move);
+
+        board.makeMoveLong(board.turn, move);
+        movesMade++;
+        totalNodes++;
+
+        score = -principleVariationSearch(board, depth - 1, ply + 1, -beta, -alpha, extended, passingMove);
+
+        board.unMakeMove();
+
+        if (!running || stopSearch()) {
+            return 0;
+        }
 
         if (score > bestScore) {
             bestScore = score;
             bestMove = move;
+            if (score > alpha) {
+                alpha = score;
+            }
             if (ply == 0) {
                 aiMoveLong = bestMove;
                 aiMoveScore = bestScore;
             }
         }
 
-    } else {
-        while (moves) {
-            move = moves & -moves;
-
-            assert(move);
-
-            unsigned int moveIndex = getIndexLowestBit(move);
-
-            board.makeMove(moveIndex);
-
-            movesMade++;
-            totalNodes++;
-
-            score = -principleVariationSearch(board, depth - 1, ply + 1, -beta, -alpha, extended);
-
-            board.unMakeMove();
-
-            if (!running || stopSearch()) {
-                return 0;
-            }
-
-            if (score > bestScore) {
-                bestScore = score;
-                bestMove = move;
-                if (score > alpha) {
-                    alpha = score;
-                }
-                if (ply == 0) {
-                    aiMoveLong = bestMove;
-                    aiMoveScore = bestScore;
-                }
-            }
-
-            if (alpha >= beta) {
-                break;
-            }
-
-            moves &= moves - 1;
+        if (alpha >= beta) {
+            break;
         }
+
     }
 
     if (now() > this->stopTime) {
@@ -233,10 +218,117 @@ EngineMinimaxBetter::principleVariationSearch(Board &board, int depth, int ply, 
 
 
     if (bestScore == EvalBase::SHORT_MIN) {
-        printBoardWithIndexAndLegalMoves(board);
+//        printBoardWithIndexAndLegalMoves(board);
     }
+    assert(bestMove != 0);
     assert(bestScore != EvalBase::SHORT_MIN);
 
     return bestScore;
 }
+
+//unsigned long
+//EngineMinimaxBetter::principleVariationSearch(Board &board, int depth, int ply, int alpha, int beta, bool extended) {
+//    unsigned long moves = board.generateLegalMoves();
+//    getMovesAsArray(this->movesArray, moves);
+//
+//    unsigned int ex = extended ? 0 : getExtension(board, moves);
+//    if (ex) {
+//        extended = true;
+//    }
+//    depth += 2 * ex;
+//
+//    if (depth <= 0) {
+//        return evaluator->eval(board, moves);
+//    }
+//
+//    unsigned long move = 0;
+//    unsigned long bestMove = 0;
+//    int score = 0, bestScore = EvalBase::SHORT_MIN, movesMade = 0;
+//
+//    if (moves == 0) {
+//
+//        board.flipTurn();
+//        unsigned long opponentMoves = board.generateLegalMoves();
+//        board.flipTurn();
+//
+//        if (opponentMoves == 0) {
+//            unsigned long m = board.getMyPieces();
+//            unsigned long u = board.getEnemyPieces();
+//
+//            if (m == u) {
+//                return EvalBase::DRAW_SCORE;
+//            }
+//            if (m > u) {
+//                return EvalBase::CHECKMATE_SCORE;
+//            }
+//
+//            return EvalBase::IN_CHECKMATE_SCORE;
+//        }
+//
+//        board.flipTurn();
+//        score = -principleVariationSearch(board, depth - 1, ply + 1, -beta, -alpha, extended);
+//        board.flipTurn();
+//
+//        if (score > bestScore) {
+//            bestScore = score;
+//            bestMove = move;
+//            if (ply == 0) {
+//                aiMoveLong = bestMove;
+//                aiMoveScore = bestScore;
+//            }
+//        }
+//
+//    } else {
+//        while (moves) {
+//            move = moves & -moves;
+//
+//            assert(move);
+//
+//            unsigned int moveIndex = getIndexLowestBit(move);
+//
+//            board.makeMove(moveIndex);
+//
+//            movesMade++;
+//            totalNodes++;
+//
+//            score = -principleVariationSearch(board, depth - 1, ply + 1, -beta, -alpha, extended);
+//
+//            board.unMakeMove();
+//
+//            if (!running || stopSearch()) {
+//                return 0;
+//            }
+//
+//            if (score > bestScore) {
+//                bestScore = score;
+//                bestMove = move;
+//                if (score > alpha) {
+//                    alpha = score;
+//                }
+//                if (ply == 0) {
+//                    aiMoveLong = bestMove;
+//                    aiMoveScore = bestScore;
+//                }
+//            }
+//
+//            if (alpha >= beta) {
+//                break;
+//            }
+//
+//            moves &= moves - 1;
+//        }
+//    }
+//
+//    if (now() > this->stopTime) {
+//        return 0;
+//    }
+//
+//
+//    if (bestScore == EvalBase::SHORT_MIN) {
+//        printBoardWithIndexAndLegalMoves(board);
+//    }
+//    assert(bestScore != EvalBase::SHORT_MIN);
+//
+//    return bestScore;
+//}
 

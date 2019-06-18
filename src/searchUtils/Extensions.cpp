@@ -12,6 +12,11 @@ unsigned int getExtension(Board &board, unsigned long moves) {
         return 1;
     }
 
+    // extend if the move may allow a corner capture
+    if (moves & LITTLE_SPOON_SQUARES) {
+        return 1;
+    }
+
     // singular move extension
     if (popCount(moves) == 1) {
         return 1;

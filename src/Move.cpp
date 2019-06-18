@@ -17,21 +17,28 @@ unsigned long getMoveForPiece(unsigned long piece, unsigned long friends, unsign
     return 0;
 }
 
-std::vector<long> getMovesAsArray(unsigned long moves){
-    std::vector<long> result;
-
-    while (moves){
-        result.push_back(moves & -moves);
-        moves &= moves - 1;
+void getMovesAsArray(unsigned long *array, unsigned long moves) {
+    // store number of moves in array[0]
+    int index = 1;
+    int c = 1;
+    if (moves == 0) {
+        array[1] = PASS_MOVE;
+        index++;
+    }else {
+        c = popCount(moves);
+        while (moves) {
+            array[index++] = (moves & -moves);
+            moves &= moves - 1;
+        }
     }
-
-    return result;
+    array[0] = index;
+    assert(c +1== index);
 }
 
-std::vector<std::string> getMovesAsArrayString(unsigned long moves){
+std::vector<std::string> getMovesAsArrayString(unsigned long moves) {
     std::vector<std::string> result = {};
 
-    while (moves){
+    while (moves) {
         result.push_back(getMoveStringFromMove(moves & -moves));
         moves &= moves - 1;
     }

@@ -9,7 +9,7 @@ class Board {
 public:
     unsigned long whitePieces, blackPieces;
     Colour turn;
-
+    unsigned int numberOfMoves = 0;
 
 public:
     Board();
@@ -26,13 +26,13 @@ public:
 
     void flipTurn();
 
-    unsigned long allPieces();
+    const unsigned long allPieces() const;
 
     unsigned long getEmptySquares();
 
     unsigned long getNeighbourSquares();
 
-    unsigned long getBorderPieces();
+    const unsigned long getBorderPieces() const;
 
     unsigned long generateLegalMoves();
 
@@ -48,6 +48,7 @@ public:
 
     void unMakeMove();
 
+    void makeMoveLong(Colour t, unsigned long move);
 };
 
 std::string getMoveStringFromMove(unsigned long l);

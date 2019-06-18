@@ -5,33 +5,61 @@
 #include "EvalBasicHeuristics.h"
 #include "../BitBoardUtils.h"
 
-int materialWeight = 2;
-int cornerWeight = 10;
-int moveWeight = 2;
-int turnWeight = 10;
+const int materialWeight = 1;
+const int cornerWeight = 14;
+const int moveWeight = 2;
+const int turnWeight = 10;
+const int smallSpoonWeightCorner = 5;
+const int smallSpoonWeightNoCorner = -25;
+const int bigSpoonWeightNoCorner = 15;
+const int enemiesHasMoreBorderPiecesThanMe = 10;
 
 int EvalBasicHeuristics::eval(const Board &board, unsigned long moves) {
-    int score = 0;
+    int finalScore = 0;
+    const bool w = board.turn == WHITE;
 
-    const int material = popCount(board.whitePieces) - popCount(board.blackPieces);
-    const int weightedMaterial = (board.turn == WHITE ? material : -material) * materialWeight;
+    int colourScore = 0;
+    for (int i = WHITE; i <= BLACK; i++) {
+        colourScore = 0;
+        const unsigned long enemies = i == BLACK ? board.whitePieces : board.blackPieces;
+        const unsigned long friends = i == WHITE ? board.whitePieces : board.blackPieces;
 
-    score += weightedMaterial;
+        const unsigned long allBorderPieces = board.getBorderPieces();
+        const unsigned long myBorderPieces = allBorderPieces & friends;
+        const unsigned long enemyBorderPieces = allBorderPieces & enemies;
 
-    const int myCorners = popCount(board.getMyPieces() & CORNERS);
-    score += myCorners * cornerWeight;
+        if (popCount(enemyBorderPieces) > popCount(myBorderPieces)) {
+            colourScore += enemiesHasMoreBorderPiecesThanMe;
+        }
 
-    const int enemyCorners = popCount(board.getEnemyPieces() & CORNERS);
-    score += enemyCorners * cornerWeight;
+        const int myCorners = popCount(friends & CORNERS);
+        colourScore += myCorners * cornerWeight;
 
-    score += popCount(moves) * moveWeight;
+        colourScore += popCount(friends) * materialWeight;
 
-    score += turnWeight;
 
-    return score;
+        for (int c = 0; c < 4; c++) {
+            if (friends & CORNER_ARRAY[c]) {
+                // todo, code safe rectangles
+                colourScore += popCount(friends & LITTLE_SPOON_ARRAY[c]) * smallSpoonWeightCorner;
+            } else {
+                colourScore -= popCount(friends & LITTLE_SPOON_ARRAY[c]) * smallSpoonWeightNoCorner;
+            }
+            colourScore += popCount(friends & BIG_SPOON_ARRAY[c]) * bigSpoonWeightNoCorner;
+        }
+
+        if (i == board.turn) {
+            finalScore += colourScore;
+        } else {
+            finalScore -= colourScore;
+        }
+    }
+
+    finalScore += popCount(moves) * moveWeight;
+
+    finalScore += turnWeight;
+
+    return finalScore;
 }
 
 
-int EvalBasicHeuristics::evalTurn(const Board &board) {
-
-}

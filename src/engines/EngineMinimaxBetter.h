@@ -23,6 +23,7 @@ private:
     TimePoint startTime;
     TimePoint stopTime;
 
+
 public:
 
     explicit EngineMinimaxBetter(int maxDepth, bool printInfo = false, EvalBase *evaluator = new EvalSimpleCount(),
@@ -43,7 +44,8 @@ public:
 
     unsigned int getDisplayScoreOfMove(Board &board) override;
 
-    unsigned long principleVariationSearch(Board &board, int depth, int ply, int alpha, int beta, bool extended);
+    unsigned long principleVariationSearch(Board &board, int depth, int ply, int alpha, int beta, bool extended,
+                                           bool passed);
 
     unsigned long iterativeDeepeningSearch(Board &board);
 

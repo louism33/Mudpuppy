@@ -13,6 +13,7 @@
 #include "Board.h"
 #include "BitBoardUtils.h"
 #include "MoveUtils.h"
+#include "Move.h"
 
 using namespace std;
 
@@ -37,6 +38,7 @@ Board::Board() {
     this->whitePieces = INITIAL_WHITE;
     this->turn = INITIAL_TURN;
     masterIndex = 0;
+    this->numberOfMoves = 0;
 }
 
 Board::Board(const Board &b) {
@@ -110,10 +112,11 @@ void Board::makeMove(unsigned int index) {
 
 void Board::makeMove(Colour t, int index) {
     setupAttacksDatabase();
-
     assert(index >= 0);
     assert(index <= 63);
+    this->numberOfMoves++;
     const bool w = t == WHITE;
+    this->flipTurn();
 
     whiteStackP[masterIndex] = this->whitePieces;
     blackStackP[masterIndex] = this->blackPieces;
@@ -137,7 +140,7 @@ void Board::makeMove(Colour t, int index) {
         this->whitePieces |= caps;
         this->blackPieces ^= caps;
         this->whitePieces |= piece;
-    } else if (this->turn == BLACK) {
+    } else {
 //        assert(!(caps & this->blackPieces));
 //        assert((caps | this->whitePieces) == this->whitePieces);
 
@@ -145,7 +148,7 @@ void Board::makeMove(Colour t, int index) {
         this->whitePieces ^= caps;
         this->blackPieces |= piece;
     }
-    this->flipTurn();
+//    this->flipTurn();
 
     // check that no pieces have (dis)appeared
 //    unsigned long mw = this->whitePieces;
@@ -168,15 +171,54 @@ void Board::makeMove(Colour t, int index) {
 
 }
 
+void Board::makeMoveLong(Colour t, unsigned long move) {
+    assert(move == PASS_MOVE || popCount(move) == 1);
+    setupAttacksDatabase();
+    this->flipTurn();
+    this->numberOfMoves++;
+    whiteStackP[masterIndex] = this->whitePieces;
+    blackStackP[masterIndex] = this->blackPieces;
+    masterIndex++;
+
+    if (move == PASS_MOVE) {
+        return;
+    }
+
+    const bool w = t == WHITE;
+    unsigned long enemies = !w ? this->whitePieces : this->blackPieces;
+    unsigned long friends = w ? this->whitePieces : this->blackPieces;
+
+    unsigned int index = getIndexLowestBit(move);
+    unsigned long caps = ::getMoveCaptures(index, friends, enemies);
+
+    if (!caps) {
+        printBoard(*this);
+        printLong(move);
+        cout << (move == PASS_MOVE) <<endl;
+    }
+    assert(caps);
+
+    if (w) {
+        this->whitePieces |= caps;
+        this->blackPieces ^= caps;
+        this->whitePieces |= move;
+    } else {
+        this->blackPieces |= caps;
+        this->whitePieces ^= caps;
+        this->blackPieces |= move;
+    }
+}
+
 void Board::unMakeMove() {
     assert(masterIndex > 0);
+    this->numberOfMoves--;
     masterIndex--;
     this->whitePieces = whiteStackP[masterIndex];
     this->blackPieces = blackStackP[masterIndex];
     this->flipTurn();
 }
 
-unsigned long Board::allPieces() {
+const unsigned long Board::allPieces() const {
     return this->whitePieces | this->blackPieces;
 }
 
@@ -197,14 +239,10 @@ unsigned long Board::getNeighbourSquares() {
             ((p & ~U_L_BORDER) << 9u));
 }
 
-unsigned long Board::getBorderPieces() {
-    const unsigned long s = getNeighbourSquares();
+const unsigned long Board::getBorderPieces() const {
     const unsigned long p = this->allPieces();
     // clockwise
-    return p &
-           (((s & ~U_BORDER) << 8u) | ((s & ~U_R_BORDER) << 7u) | ((s & ~R_BORDER) >> 1u) | ((s & ~D_R_BORDER) >> 9u)
-            | ((s & ~D_BORDER) >> 8u) | ((s & ~D_L_BORDER) >> 7u) | ((s & ~L_BORDER) << 1u) |
-            ((s & ~U_L_BORDER) << 9u));
+    return p & (~((p & ~U_BORDER) << 8u) | ~((p & ~R_BORDER) >> 1u) | ~((p & ~D_BORDER) >> 8u) | ~((p & ~L_BORDER) << 1u));
 }
 
 
