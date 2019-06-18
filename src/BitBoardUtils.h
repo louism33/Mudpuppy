@@ -6,23 +6,26 @@
 #define OTHELLOPROJECT_BITBOARDUTILS_H
 
 const static unsigned long CORNERS = 0x8100000000000081;
-const static unsigned long CORNER_NW = 0x8000000000000000;
 
+const static unsigned long CORNER_NW = 0x8000000000000000;
 const static unsigned long CORNER_NE = 0x0100000000000000;
+
 const static unsigned long CORNER_SE = 0x0000000000000080;
 const static unsigned long CORNER_SW = 0x0000000000000001;
 const static unsigned long LITTLE_SPOON_NW = 0x0203000000000000;
-
 const static unsigned long LITTLE_SPOON_NE = 0x40c0000000000000;
+
 const static unsigned long LITTLE_SPOON_SE = 0x0000000000000302;
 const static unsigned long LITTLE_SPOON_SW = 0x000000000000c040;
 const static unsigned long LITTLE_SPOON_SQUARES = 0x42c300000000c342;
-
 const static unsigned long BIG_SPOON_NW = 0x2020e00000000000;
+
 const static unsigned long BIG_SPOON_NE = 0x0404070000000000;
 const static unsigned long BIG_SPOON_SE = 0x0000000000070404;
 const static unsigned long BIG_SPOON_SW = 0x0000000000e02020;
 const static unsigned long BIG_SPOON_SQUARES = 0x2424e70000e72424;
+
+const static unsigned long GENERAL_EDGE_OF_BOARD = CORNERS | LITTLE_SPOON_NW | BIG_SPOON_SQUARES;
 
 const static unsigned long CORNER_ARRAY[4]{
         CORNER_NW, CORNER_NE, CORNER_SE, CORNER_SW

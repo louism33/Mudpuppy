@@ -13,6 +13,7 @@
 #include "Move.h"
 #include "MoveUtils.h"
 #include "Tests.h"
+#include "searchUtils/TranspositionTable.h"
 
 using namespace std;
 
@@ -20,19 +21,20 @@ using namespace std;
 #pragma ide diagnostic ignored "OCSimplifyInspection"
 
 int main() {
-//    tests();
-//    speedTests();
+//    masterTest();
+
     Board board;
 
+    printBoardWithIndexAndLegalMoves(board);
 
-    if (false){
+    if (false) {
         EvalBasicHeuristics evaluator;
         unsigned long moves = board.generateLegalMoves();
 //        printBoard(board);
         int eval = evaluator.eval(board, moves);
         cout << eval << endl;
     }
-    if (false){
+    if (false) {
         string m = "d3";
         board.makeMoveS(&m);
 //        printBoard(board);
@@ -47,7 +49,7 @@ int main() {
 
         engine = new EngineMinimaxBetter(0, true, new EvalBasicHeuristics,
                                          "Engine Minimax Better with BasicHeuristics",
-                                         10000000);
+                                         1000'000);
 
 
         unsigned int i = engine->getBestMove(board);

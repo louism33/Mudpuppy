@@ -5,10 +5,14 @@
 #ifndef MUDPUPPY_UCI_H
 #define MUDPUPPY_UCI_H
 
+#include "../Board.h"
+
 /*
  * a copy of the uci chess protocol
  */
-void sendInfoString(int depth, int score, long nps, long time, long pv);
+void sendInfoString(Board *board, int depth, int score, long nps, long time, long pv);
+
+std::string getPV(Board *board);
 
 void sendBestMove(long bestMove);
 

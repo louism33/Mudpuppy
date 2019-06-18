@@ -17,6 +17,11 @@
 #include <sstream>
 #include <iostream>
 #include "Tests.h"
+#include "searchUtils/TranspositionTable.h"
+
+#pragma clang diagnostic push
+#pragma ide diagnostic ignored "OCSimplifyInspection"
+using namespace std;
 
 void speedTests() {
 
@@ -31,7 +36,7 @@ void speedTests() {
     delete board;
 }
 
-void tests() {
+void perftTests() {
     // thanks to http://www.aartbik.com/MISC/reversi.html
     auto *board = new Board;
     unsigned long p1 = Perft::perft(board, 1);
@@ -111,3 +116,71 @@ void tests() {
 
     delete board;
 }
+
+void boardIndexTest(){
+    if (true){
+
+        auto *board = new Board;
+
+        assert(hashPlayer(board->whitePieces, true) != hashPlayer(board->whitePieces, false));
+        assert(hashPlayer(board->blackPieces, true) != hashPlayer(board->blackPieces, false));
+    }
+
+    if (true){
+        auto board = new Board;
+        unsigned long i = getBoardHash(board);
+        board->flipTurn();
+        unsigned long ii = getBoardHash(board);
+        assert(i != ii);
+    }
+}
+
+void ttTests1() {
+    auto *b = new Board();
+
+    unsigned int index = getIndex(b, 0);
+
+    addToTableReplaceByDepth(b, 1u << 20u, 123, Flag::EXACT, 12, 1);
+    Entry *entry = retrieveFromTable(b);
+
+    assert(entry);
+}
+
+void ttTests2() {
+    auto *b = new Board();
+
+    if (true) {
+        addToTableReplaceByDepth(b, 1u << 20u, 123, Flag::EXACT, 12, 1);
+        assert(retrieveFromTable(b));
+    }
+    if (true) {
+        string m = "d3";
+        b->makeMoveS(&m);
+        addToTableReplaceByDepth(b, 1u << 20u, 123, Flag::EXACT, 12, 1);
+        assert(retrieveFromTable(b));
+    }
+
+    if (true) {
+        string m = "e3";
+        b->makeMoveS(&m);
+        addToTableReplaceByDepth(b, 1u << 20u, 123, Flag::EXACT, 12, 1);
+        assert(retrieveFromTable(b));
+    }
+
+    if (true) {
+        string m = "f6";
+        b->makeMoveS(&m);
+        addToTableReplaceByDepth(b, 1u << 20u, 123, Flag::EXACT, 12, 1);
+        assert(retrieveFromTable(b));
+    }
+}
+
+
+
+void masterTest() {
+    ttTests1();
+    ttTests2();
+    boardIndexTest();
+//    perftTests();
+}
+#pragma clang diagnostic pop

@@ -8,6 +8,10 @@
 
 void speedTests();
 
-void tests();
+void masterTest();
+
+void perftTests();
+
+void ttTests1();
 
 #endif //OTHELLOPROJECT_TESTS_H

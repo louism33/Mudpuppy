@@ -18,14 +18,32 @@
 #include "../Move.h"
 
 // consider changing to dealing with int, and storing score in high bits
-void getOrderedMovesAsArray(unsigned long *array, unsigned long moves) {
+void getOrderedMovesAsArray(unsigned long *array, unsigned long moves, unsigned long hashMove = 0) {
     int index = 1;
     int c = 1;
-    if (moves == 0) {
+
+    bool noMoves = moves == 0;
+    if (hashMove == PASS_MOVE) {
+        if (!noMoves) {
+            printLong(moves);
+        }
+        assert(noMoves);
+    }
+
+    if (noMoves) {
+        assert(hashMove == 0 || hashMove == PASS_MOVE);
+    }
+
+    if (noMoves) {
         array[1] = PASS_MOVE;
         index++;
     } else {
         c = popCount(moves);
+
+        if (hashMove & moves){
+            array[index++] = hashMove;
+            moves ^= hashMove;
+        }
 
         unsigned long cornerMoves = moves & CORNERS; // 2
         unsigned long bigSpoonMoves = moves & BIG_SPOON_SQUARES; // 3
@@ -51,7 +69,11 @@ void getOrderedMovesAsArray(unsigned long *array, unsigned long moves) {
         }
     }
     array[0] = index;
-    assert(c + 1 == index);
+    bool b = c + 1 == index;
+    if (!b) {
+        printLong(hashMove);
+    }
+    assert(b);
 }
 
 
