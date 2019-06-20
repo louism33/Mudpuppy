@@ -25,7 +25,7 @@ const static unsigned long BIG_SPOON_SE = 0x0000000000070404;
 const static unsigned long BIG_SPOON_SW = 0x0000000000e02020;
 const static unsigned long BIG_SPOON_SQUARES = 0x2424e70000e72424;
 
-const static unsigned long GENERAL_EDGE_OF_BOARD = CORNERS | LITTLE_SPOON_NW | BIG_SPOON_SQUARES;
+const static unsigned long GENERAL_CORNER_AREA = CORNERS | LITTLE_SPOON_NW | BIG_SPOON_SQUARES;
 
 const static unsigned long CORNER_ARRAY[4]{
         CORNER_NW, CORNER_NE, CORNER_SE, CORNER_SW

@@ -31,12 +31,15 @@ public:
                                  TimePoint timeLimit = 1000l);
 
     int maxDepth = 0;
-    const int absoluteMaxDepth = 64;
+    const int absoluteMaxDepth = 128;
+    const TimePoint absoluteMaxLimit = TimePoint(1'000'000);
 
     bool printDebug = false;
     bool printInfo = false;
 
     EvalBase *evaluator;
+
+    void fullReset();
 
     unsigned long getBestMove(Board &board) override;
 

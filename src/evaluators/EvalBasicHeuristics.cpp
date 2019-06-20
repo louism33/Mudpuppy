@@ -13,6 +13,7 @@ const int smallSpoonWeightCorner = 5;
 const int smallSpoonWeightNoCorner = -25;
 const int bigSpoonWeightNoCorner = 15;
 const int enemiesHasMoreBorderPiecesThanMe = 10;
+const int iWillHaveLastMove = 15;
 
 int EvalBasicHeuristics::eval(const Board &board, unsigned long moves) {
     int finalScore = 0;
@@ -24,10 +25,14 @@ int EvalBasicHeuristics::eval(const Board &board, unsigned long moves) {
         const unsigned long enemies = i == BLACK ? board.whitePieces : board.blackPieces;
         const unsigned long friends = i == WHITE ? board.whitePieces : board.blackPieces;
 
+        const unsigned long allPieces = enemies | friends;
         const unsigned long allBorderPieces = board.getBorderPieces();
         const unsigned long myBorderPieces = allBorderPieces & friends;
         const unsigned long enemyBorderPieces = allBorderPieces & enemies;
 
+        if (popCount(allPieces) & 1) {
+            colourScore += iWillHaveLastMove;
+        }
         if (popCount(enemyBorderPieces) > popCount(myBorderPieces)) {
             colourScore += enemiesHasMoreBorderPiecesThanMe;
         }

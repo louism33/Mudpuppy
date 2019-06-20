@@ -5,7 +5,6 @@
 #ifndef MUDPUPPY_TRANSPOSITIONTABLE_H
 #define MUDPUPPY_TRANSPOSITIONTABLE_H
 
-
 #include "../Board.h"
 
 enum Flag {
@@ -29,5 +28,7 @@ void addToTableReplaceByDepth(Board *board, unsigned long bestMove, int score, F
 Entry *retrieveFromTable(Board *board);
 
 unsigned long hashPlayer(unsigned long x, bool whiteTurn);
+
+void resetTT();
 
 #endif //MUDPUPPY_TRANSPOSITIONTABLE_H

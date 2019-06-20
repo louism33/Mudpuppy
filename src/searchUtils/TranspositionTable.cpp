@@ -21,12 +21,12 @@
 
 unsigned long getBoardHash(const Board *board);
 
-const unsigned  int bucketSize = 4;
-const unsigned int totalEntries = 1u << 14u;
+const unsigned int bucketSize = 4;
+const unsigned int totalEntries = 1u << 12u;
 const unsigned int shiftAmount = getIndexLowestBit(totalEntries >> 2u);
-
-unsigned long keys[(totalEntries >> 2u) + bucketSize];
-Entry entries[(totalEntries >> 2u) + bucketSize];
+const unsigned int ARRAY_SIZE = (totalEntries >> 2u) + bucketSize;
+unsigned long keys[ARRAY_SIZE];
+Entry entries[ARRAY_SIZE];
 
 unsigned long hashPlayer(unsigned long x, bool whiteTurn) {
     x = ((x >> 32u) ^ x) * 0x45d9f3b45d9f3b;
@@ -61,7 +61,6 @@ void addToTableReplaceByDepth(Board *board, unsigned long bestMove, int score, F
         Entry alreadyThere = entries[i];
 
         int d = alreadyThere.depth;
-//        std::cout << d << std::endl;
         if (k == hash) {
             if (d > depth) {
                 return;
@@ -104,7 +103,12 @@ Entry *retrieveFromTable(Board *board) {
 }
 
 
-
+void resetTT() {
+    for (int i = 0; i < ARRAY_SIZE; i++) {
+        keys[i] = 0;
+        entries[i] = {};
+    }
+}
 
 
 

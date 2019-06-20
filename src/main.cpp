@@ -24,8 +24,7 @@ int main() {
 //    masterTest();
 
     Board board;
-
-    printBoardWithIndexAndLegalMoves(board);
+//    printBoardWithIndexAndLegalMoves(board);
 
     if (false) {
         EvalBasicHeuristics evaluator;
@@ -44,23 +43,20 @@ int main() {
         cout << eval << endl;
     }
 
-    if (true) {
+    if (false) {
         EngineBase *engine;
 
+        printBoardWithIndexAndLegalMoves(board);
         engine = new EngineMinimaxBetter(0, true, new EvalBasicHeuristics,
                                          "Engine Minimax Better with BasicHeuristics",
-                                         1000'000);
+                                         100);
 
 
         unsigned int i = engine->getBestMove(board);
     }
 
-//    unsigned long moves = board.generateLegalMoves();
-//    printBoard(board);
-//    board.makeMoveLong(board.turn, moves & -moves);
-//    printBoard(board);
 
-//    playEngineGames();
+    playEngineGames();
 //    playPlayerGames();
 
     return 0;
@@ -76,81 +72,139 @@ int main() {
 
 int playEngineGames() {
 
-    int x = 1;
+    TimePoint s = now();
+
+    int numberOfFlippedIterations = 4;
+
+    int initialDepth = 3, maxDepth, absoluteMaxDepth = 9;
+    int engine1Win = 0, engine2Win = 0, draw = 0;
 
     EngineBase *engine1;
     EngineBase *engine2;
 
-    bool engine1White = true, printMove = false, printB = false, enginePrint = false;
-    while (true) {
-        Board board;
-//        engine1 = new EngineRandom("Engine Random");
-//        engine1 = new EngineMinimax(x, false, new EvalSimpleCount, "Engine Minimax with Simple Count");
-//        engine1 = new EngineMinimax(x, enginePrint, new EvalBasicHeuristics, "Engine Minimax with BasicHeuristics");
-        engine1 = new EngineMinimaxBetter(x, enginePrint, new EvalBasicHeuristics,
-                                          "Engine Minimax Better with BasicHeuristics",
-                                          1000);
+    bool engine1White, printMove = false, printB = false, enginePrint = false;
 
-        engine2 = new EngineRandom("Engine Random");
-//        engine2 = new EngineMinimax(x, enginePrint, new EvalSimpleCount, "Engine Minimax with Simple Count");
-//        engine2 = new EngineMinimax(x, false, new EvalBasicHeuristics, "Engine Minimax with BasicHeuristics");
-//        engine2 = new EngineMinimaxBetter(x, enginePrint, new EvalBasicHeuristics, "Engine Minimax Better with BasicHeuristics");
+    for (int i = 0; i < numberOfFlippedIterations * 2; i++) {
+        engine1White = i % 2 != 0;
+        cout << "\n" << endl;
+        cout << "----- Iteration " << (i + 1) << " -----" << endl;
+        if (engine1White) {
+            cout << "engine1 is white" << endl;
+        }else {
+            cout << "engine1 is black" << endl;
+        }
+        Colour engine1playOnTurn = engine1White ? WHITE : BLACK;
 
-
-        cout << "Starting new game between '" << (engine1White ? engine1->name : engine2->name)
-             << "' and '" << (!engine1White ? engine1->name : engine2->name) << "'" << endl;
-
+        maxDepth = initialDepth;
         while (true) {
+            Board board;
+            assert(board.numberOfRealMoves == 0);
+//        engine1 = new EngineRandom("Engine Random");
+//        engine1 = new EngineMinimax(maxDepth, false, new EvalSimpleCount, "Engine Minimax with Simple Count");
+//        engine1 = new EngineMinimax(maxDepth, enginePrint, new EvalBasicHeuristics, "Engine Minimax with BasicHeuristics");
+            engine1 = new EngineMinimaxBetter(0 * maxDepth, enginePrint, new EvalBasicHeuristics,
+                                              "Engine Minimax Better with BasicHeuristics",
+                                              100);
 
-            if (board.isGameOver()) {
-                cout << "Game over!";
-                printBoardWithIndexAndLegalMoves(board);
-                board.calculateScore();
-                if (engine1White) {
-                    cout << "'" << engine1->name << "' is white." << endl;
-                    cout << "'" << engine2->name << "' is black." << endl;
-                } else {
-                    cout << "'" << engine2->name << "' is white." << endl;
-                    cout << "'" << engine1->name << "' is black." << endl;
+//        engine2 = new EngineRandom("Engine Random");
+//        engine2 = new EngineMinimax(maxDepth, enginePrint, new EvalSimpleCount, "Engine Minimax with Simple Count");
+            engine2 = new EngineMinimax(maxDepth, enginePrint, new EvalBasicHeuristics,
+                                        "Engine Minimax with BasicHeuristics");
+//        engine2 = new EngineMinimaxBetter(maxDepth, enginePrint, new EvalBasicHeuristics, "Engine Minimax Better with BasicHeuristics");
+
+
+//        cout << "Starting new game between '" << (engine1White ? engine1->name : engine2->name)
+//             << "' and '" << (!engine1White ? engine1->name : engine2->name) << "'" << endl;
+
+            while (true) {
+
+                if (board.isGameOver()) {
+//                cout << "Game over!" << endl;
+//                printBoardWithIndexAndLegalMoves(board);
+
+                    int wnb = board.calculateScore();
+                    if (engine1White) {
+                        if (wnb > 0) {
+                            engine1Win++;
+                        }
+                        if (wnb < 0) {
+                            engine2Win++;
+                        }
+
+                    } else {
+                        if (wnb > 0) {
+                            engine2Win++;
+                        }
+                        if (wnb < 0) {
+                            engine1Win++;
+                        }
+                    }
+                    if (wnb == 0) {
+                        draw++;
+                    }
+                    cout << "depth: " << maxDepth << ", "
+                         << engine1Win << "|" << engine2Win << "|" << draw
+                         << " | " << (engine1Win+engine2Win+draw)<< endl;
+                    if (engine1White) {
+//                    cout << "'" << engine1->name << "' is white." << endl;
+//                    cout << "'" << engine2->name << "' is black." << endl;
+                    } else {
+//                    cout << "'" << engine2->name << "' is white." << endl;
+//                    cout << "'" << engine1->name << "' is black." << endl;
+                    }
+
+
+                    break;
                 }
+
+                if (printB) {
+                    printBoardWithIndexAndLegalMoves(board);
+                }
+
+                unsigned long moves = board.generateLegalMoves();
+                if (moves == 0) {
+                    cout << "Because there are no legal moves from this position, your turn is skipped" << endl;
+                    board.flipTurn();
+                    continue;
+                }
+
+
+                if (board.turn == engine1playOnTurn) {
+                    unsigned long move = engine1->getBestMove(board);
+                    if (printMove) {
+                        cout << "Engine1 makes move: " + getMoveStringFromMove((move)) << endl;
+                    }
+                    board.makeMoveLong(board.turn, move);
+                } else {
+                    unsigned long move = engine2->getBestMove(board);
+                    if (printMove) {
+                        cout << "Engine2 makes move: " + getMoveStringFromMove((move)) << endl;
+                    }
+                    board.makeMoveLong(board.turn, move);
+                }
+
+
+            }
+            if (maxDepth >= absoluteMaxDepth) {
                 break;
             }
-
-            if (printB) {
-                printBoardWithIndexAndLegalMoves(board);
-            }
-
-            unsigned long moves = board.generateLegalMoves();
-            if (moves == 0) {
-                cout << "Because there are no legal moves from this position, your turn is skipped" << endl;
-                board.flipTurn();
-                continue;
-            }
-
-
-            if (engine1White && board.turn == WHITE) {
-                unsigned int move = engine1->getBestMoveInt(board);
-                if (printMove) {
-                    cout << "Engine1 makes move: " + getMoveStringFromMove(newPieceOnSquare(move)) << endl;
-                }
-                board.makeMove(move);
-            } else {
-                unsigned int move = engine2->getBestMoveInt(board);
-                if (printMove) {
-                    cout << "Engine2 makes move: " + getMoveStringFromMove(newPieceOnSquare(move)) << endl;
-                }
-                board.makeMove(move);
-            }
-
-        }
-        x = x + 1;
-        cout << "The game has ended." << endl;
+            maxDepth = maxDepth + 1;
+//        cout << "The game has ended." << endl;
+//        break;
 //        if (x == 3) {
 //            break;
 //        }
 //        break;
 
+        }
+
     }
+
+//    delete engine1, engine2;
+
+    TimePoint e = now();
+
+    cout << "time taken for engine vs engine games: " << (e - s) << endl;
 
     return 0;
 }

@@ -20,6 +20,7 @@
 #include "../main.h"
 #include "Uci.h"
 #include "../searchUtils/TranspositionTable.h"
+#include "../Move.h"
 
 void sendInfoString(Board *board, int depth, int score, long nps, long time, long pv) {
     std::string pvString = getPV(board);
@@ -39,21 +40,28 @@ void sendBestMove(long bestMove) {
 const unsigned int maxPvLength = 10;
 
 std::string getPV(Board* board){
+    unsigned long bw = board->whitePieces;
+    unsigned long bb = board->blackPieces;
+
     std::string pv;
-    for (int i = 0; i < maxPvLength; i++) {
+    int i = 0;
+    for (i = 0; i < maxPvLength; i++) {
         Entry *entry = retrieveFromTable(board);
         if (entry){
             unsigned long move = entry->bestMove;
             pv += getMoveStringFromMove(move) + " ";
             board->makeMoveLong(board->turn, move);
         } else {
-            while (i){
-                board->unMakeMove();
-                i--;
-            }
             break;
         }
-
     }
+
+    while (i){
+        board->unMakeMove();
+        i--;
+    }
+
+    assert(bw == board->whitePieces);
+    assert(bb == board->blackPieces);
     return pv;
 }

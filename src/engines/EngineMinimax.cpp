@@ -28,11 +28,11 @@ unsigned int EngineMinimax::getBestMoveInt(Board &board) {
     return getIndexLowestBit(getBestMove(board));
 }
 
-unsigned int EngineMinimax::getDisplayScoreOfMove(Board &board){
+unsigned int EngineMinimax::getDisplayScoreOfMove(Board &board) {
     return aiMoveScore;
 }
 
-unsigned long getNpsMinimaxBetter(long nodes, long time){
+unsigned long getNpsMinimaxBetter(long nodes, long time) {
     if (time == 0) {
         return 0;
     }
@@ -41,7 +41,7 @@ unsigned long getNpsMinimaxBetter(long nodes, long time){
 
 static unsigned long totalNodes = 0;
 
-void resetMinimaxBetter(){
+void resetMinimaxBetter() {
     totalNodes = 0;
 }
 
@@ -49,7 +49,7 @@ unsigned long EngineMinimax::getBestMove(Board &board) {
     resetMinimaxBetter();
 
     aiMoveScore = 0;
-    aiMoveLong = -1;
+    aiMoveLong = 0;
 
     chrono::milliseconds startTime = std::chrono::duration_cast<std::chrono::milliseconds>(
             std::chrono::system_clock::now().time_since_epoch()
@@ -57,14 +57,14 @@ unsigned long EngineMinimax::getBestMove(Board &board) {
 
     iterativeDeepeningSearch(board);
 
-    if (this->print){
+    if (this->print) {
         chrono::milliseconds currentTime = std::chrono::duration_cast<std::chrono::milliseconds>(
                 std::chrono::system_clock::now().time_since_epoch()
         );
 
         long finalTime = currentTime.count() - startTime.count();
         cout << "\nThe search lasted " << finalTime << " milliseconds." << endl;
-        cout << "NPS: " << getNpsMinimaxBetter(totalNodes, finalTime) << endl;
+        cout << "NPS: " << getNpsMinimaxBetter(totalNodes, finalTime) << "\n" << endl;
     }
 
     unsigned int moveIndex = getIndexLowestBit(aiMoveLong);
@@ -88,7 +88,7 @@ unsigned long EngineMinimax::iterativeDeepeningSearch(Board &board) {
 
     bestScore = principleVariationSearch(board, maxDepth, 0, initialAlpha, initialBeta);
 
-    if (print){
+    if (print) {
         cout << "best move found: " + getMoveStringFromMove(aiMoveLong) << endl;
         cout << "best score: " + to_string(aiMoveScore) << endl;
     }
@@ -107,7 +107,7 @@ unsigned long EngineMinimax::principleVariationSearch(Board &board, int depth, i
     unsigned long bestMove = 0;
     int score = 0, bestScore = EvalBase::SHORT_MIN, movesMade = 0;
 
-    if (moves == 0){
+    if (moves == 0) {
 
         board.flipTurn();
         unsigned long opponentMoves = board.generateLegalMoves();
@@ -148,7 +148,7 @@ unsigned long EngineMinimax::principleVariationSearch(Board &board, int depth, i
 
             unsigned int moveIndex = getIndexLowestBit(move);
 
-            board.makeMove(moveIndex);
+            board.makeMoveLong(board.turn, move);
             movesMade++;
             totalNodes++;
             score = -principleVariationSearch(board, depth - 1, ply + 1, -beta, -alpha);
@@ -156,7 +156,7 @@ unsigned long EngineMinimax::principleVariationSearch(Board &board, int depth, i
             if (score > bestScore) {
                 bestScore = score;
                 bestMove = move;
-                if (score > alpha){
+                if (score > alpha) {
                     alpha = score;
                 }
                 if (ply == 0) {
@@ -165,7 +165,7 @@ unsigned long EngineMinimax::principleVariationSearch(Board &board, int depth, i
                 }
             }
 
-            if (alpha >= beta){
+            if (alpha >= beta) {
                 break;
             }
 

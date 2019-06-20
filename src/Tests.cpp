@@ -18,6 +18,7 @@
 #include <iostream>
 #include "Tests.h"
 #include "searchUtils/TranspositionTable.h"
+#include "searchUtils/MoveOrderer.h"
 
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "OCSimplifyInspection"
@@ -175,12 +176,45 @@ void ttTests2() {
     }
 }
 
+void moveOrdererTest(){
 
+    // board with no legal moves
+    Board board;
+    board.whitePieces = 90674632162019328;
+    board.blackPieces = 12640496;
+    board.turn = WHITE;
+//    printBoardWithIndexAndLegalMoves(board);
+    
+    auto* movesArray = new unsigned long[32];
+    unsigned long moves = board.generateLegalMoves();
+    getOrderedMovesAsArray(movesArray, moves, 0);
+    for (int m = 1; m < movesArray[0]; m++) {
+        unsigned long move = movesArray[m];
+        assert(move == PASS_MOVE);
+//        cout << move << endl;
+//        printLong(move);
+    }
+}
+
+void passMoveTest(){
+    Board board;
+//    printBoardWithIndexAndLegalMoves(board);
+    int i = popCount(board.allPieces());
+    Colour colour = board.turn;
+    board.makeMoveLong(colour, PASS_MOVE);
+    Colour turn2 = board.turn;
+    int ii = popCount(board.allPieces());
+    assert(i == ii);
+    assert(colour != turn2);
+//    printBoardWithIndexAndLegalMoves(board);
+}
 
 void masterTest() {
-    ttTests1();
-    ttTests2();
-    boardIndexTest();
+//    ttTests1();
+//    ttTests2();
+//    boardIndexTest();
+//    moveOrdererTest();
+    passMoveTest();
 //    perftTests();
 }
 #pragma clang diagnostic pop

@@ -9,7 +9,7 @@ class Board {
 public:
     unsigned long whitePieces, blackPieces;
     Colour turn;
-    unsigned int numberOfMoves = 0;
+    unsigned int numberOfRealMoves = 0;
 
 public:
     Board();

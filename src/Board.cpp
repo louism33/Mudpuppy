@@ -20,14 +20,9 @@ using namespace std;
 
 static unsigned long INITIAL_WHITE = 0x1008000000;
 static unsigned long INITIAL_BLACK = 0x810000000;
-//static unsigned long INITIAL_WHITE = 69123964928;
-//static unsigned long INITIAL_BLACK = 34359741952;
 
 static Colour INITIAL_TURN = Colour::WHITE;
-//static Colour INITIAL_TURN = Colour::BLACK;
 
-//long whiteStack[64];
-//long blackStack[64];
 long *whiteStackP;
 long *blackStackP;
 int masterIndex = 0;
@@ -38,7 +33,7 @@ Board::Board() {
     this->whitePieces = INITIAL_WHITE;
     this->turn = INITIAL_TURN;
     masterIndex = 0;
-    this->numberOfMoves = 0;
+    this->numberOfRealMoves = 0;
 }
 
 Board::Board(const Board &b) {
@@ -57,8 +52,8 @@ void setup() {
 //        return;
 //    }
     setupStarMask();
-    whiteStackP = new long[64];
-    blackStackP = new long[64];
+    whiteStackP = new long[128];
+    blackStackP = new long[128];
     boardReady = true;
 }
 
@@ -114,7 +109,10 @@ void Board::makeMove(Colour t, int index) {
     setupAttacksDatabase();
     assert(index >= 0);
     assert(index <= 63);
-    this->numberOfMoves++;
+
+    throw runtime_error("");
+
+    this->numberOfRealMoves++;
     const bool w = t == WHITE;
     this->flipTurn();
 
@@ -173,13 +171,15 @@ void Board::makeMove(Colour t, int index) {
 
 void Board::makeMoveLong(Colour t, unsigned long move) {
     assert(move == PASS_MOVE || popCount(move) == 1);
+    assert(numberOfRealMoves >= 0);
+
     setupAttacksDatabase();
     this->flipTurn();
-    this->numberOfMoves++;
     whiteStackP[masterIndex] = this->whitePieces;
     blackStackP[masterIndex] = this->blackPieces;
     masterIndex++;
 
+    this->numberOfRealMoves++;
     if (move == PASS_MOVE) {
         return;
     }
@@ -196,6 +196,11 @@ void Board::makeMoveLong(Colour t, unsigned long move) {
         printLong(move);
         cout << (move == PASS_MOVE) <<endl;
     }
+
+    if (!caps){
+        printBoardWithIndexAndLegalMoves(*this);
+        printLong(move);
+    }
     assert(caps);
 
     if (w) {
@@ -211,10 +216,11 @@ void Board::makeMoveLong(Colour t, unsigned long move) {
 
 void Board::unMakeMove() {
     assert(masterIndex > 0);
-    this->numberOfMoves--;
+    this->numberOfRealMoves--;
     masterIndex--;
     this->whitePieces = whiteStackP[masterIndex];
     this->blackPieces = blackStackP[masterIndex];
+    
     this->flipTurn();
 }
 
