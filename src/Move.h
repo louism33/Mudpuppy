@@ -9,10 +9,12 @@
 #include <string>
 #include <vector>
 
-unsigned long getMoveForPiece(unsigned long piece, unsigned long friends, unsigned long enemies);
+const uint64_t PASS_MOVE = 0xffffffffffffffff;
 
-std::vector<long> getMovesAsArray(unsigned long moves);
+uint64_t getMoveForPiece(uint64_t piece, uint64_t friends, uint64_t enemies);
 
-std::vector<std::string> getMovesAsArrayString(unsigned long moves);
+void getMovesAsArray(uint64_t *array, uint64_t moves);
+
+std::vector<std::string> getMovesAsArrayString(uint64_t moves);
 
 #endif //OTHELLOPROJECT_MOVE_H

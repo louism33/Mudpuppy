@@ -10,6 +10,7 @@ enum Colour {
 };
 
 int playEngineGames();
+
 int playPlayerGames();
 
 #endif //OTHELLOPROJECT_MAIN_H

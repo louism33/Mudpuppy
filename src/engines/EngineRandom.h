@@ -26,11 +26,11 @@ public:
 
     EngineRandom(std::string name);
 
-    unsigned long getBestMove(Board &board);
+    uint64_t getBestMove(Board &board);
 
-    unsigned int getBestMoveInt(Board &board);
+    uint32_t getBestMoveInt(Board &board);
 
-    unsigned int getDisplayScoreOfMove(Board &board);
+    int getDisplayScoreOfMove(Board &board);
 };
 
 

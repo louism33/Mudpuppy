@@ -15,13 +15,13 @@
 
 class EngineBase{
 public:
-    std::string *name;
+    std::string name;
 
-    virtual unsigned int getDisplayScoreOfMove(Board &board) = 0;
+    virtual int getDisplayScoreOfMove(Board &board) = 0;
 
-    virtual unsigned int getBestMoveInt(Board &board) = 0;
+    virtual uint32_t getBestMoveInt(Board &board) = 0;
 
-    virtual unsigned long getBestMove(Board &board) = 0;
+    virtual uint64_t getBestMove(Board &board) = 0;
 };
 
 #endif //OTHELLOPROJECT_ENGINEBASE_H

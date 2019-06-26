@@ -5,26 +5,28 @@
 #ifndef OTHELLOPROJECT_MOVEUTILS_H
 #define OTHELLOPROJECT_MOVEUTILS_H
 
-extern unsigned long fillUpAttacks[8][256][256];
+#include <cstdint>
 
-extern unsigned long aFileAttacks[8][256][256];
+extern uint64_t fillUpAttacks[8][256][256];
+
+extern uint64_t aFileAttacks[8][256][256];
 
 void setupAttacksDatabase();
 
-unsigned long flipAntiDiagonal(unsigned long x);
+uint64_t flipAntiDiagonal(uint64_t x);
 
-unsigned long flipDiagonal(unsigned long x);
+uint64_t flipDiagonal(uint64_t x);
 
-unsigned long diagonalAttacks(unsigned int index, unsigned long friends, unsigned long enemies);
+uint64_t diagonalAttacks(uint32_t index, uint64_t friends, uint64_t enemies);
 
-unsigned long antiDiagAttacks(unsigned int index, unsigned long friends, unsigned long enemies);
+uint64_t antiDiagAttacks(uint32_t index, uint64_t friends, uint64_t enemies);
 
-unsigned long rankAttacks(unsigned int index, unsigned long friends, unsigned long enemies);
+uint64_t rankAttacks(uint32_t index, uint64_t friends, uint64_t enemies);
 
-unsigned long fileAttacks(unsigned int index, unsigned long friends, unsigned long enemies);
+uint64_t fileAttacks(uint32_t index, uint64_t friends, uint64_t enemies);
 
-unsigned long getMoveCaptures(unsigned long piece, unsigned long friends, unsigned long enemies);
+uint64_t getMoveCaptures(uint64_t piece, uint64_t friends, uint64_t enemies);
 
-unsigned long *allLongInStar(unsigned long *indexes, unsigned long star);
+uint64_t *allLongInStar(uint64_t *indexes, uint64_t star);
 
 #endif //OTHELLOPROJECT_MOVEUTILS_H

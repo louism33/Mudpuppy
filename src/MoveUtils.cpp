@@ -14,15 +14,15 @@
 #include "MoveUtils.h"
 
 using namespace std;
-unsigned long getMoveCapturesHelper(unsigned long piece, unsigned long friends, unsigned long enemies);
+uint64_t getMoveCapturesHelper(uint64_t piece, uint64_t friends, uint64_t enemies);
 
 struct Permutation {
-    unsigned long emptiesTreatAsDead = 0;
-    unsigned long enemiesTreatAsEmpties = 0;
-    unsigned long friendsTreatAsOcc = 0;
+    uint64_t emptiesTreatAsDead = 0;
+    uint64_t enemiesTreatAsEmpties = 0;
+    uint64_t friendsTreatAsOcc = 0;
 };
 
-Permutation *allPermutationsFromLongs(Permutation *permutations, unsigned long *pieces, unsigned long size);
+Permutation *allPermutationsFromLongs(Permutation *permutations, uint64_t *pieces, uint64_t size);
 
 bool moveDatabaseReady = false;
 
@@ -32,24 +32,24 @@ void setupAttacksDatabase() {
         return;
     }
 
-    unsigned long longsInStar[8];
+    uint64_t longsInStar[8];
     for (int x = 0; x < 8; x++) {
-        unsigned long piece = newPieceOnSquare(x);
-        unsigned long star = starLR[x];
+        uint64_t piece = newPieceOnSquare(x);
+        uint64_t star = starLR[x];
         allLongInStar(longsInStar, star);
-        const unsigned long size = pow(3ul, longsInStar[0]);
+        const uint64_t size = pow(3ul, longsInStar[0]);
 
         Permutation permutations[size];
         allPermutationsFromLongs(permutations, longsInStar, size);
         for (int p = 0; p < size; p++) {
             Permutation &perm = permutations[p];
-            unsigned long moves = getMoveCapturesHelper(piece, perm.friendsTreatAsOcc,
+            uint64_t moves = getMoveCapturesHelper(piece, perm.friendsTreatAsOcc,
                                                         perm.enemiesTreatAsEmpties);
 
-            unsigned long i = flipAntiDiagonal(moves);
+            uint64_t i = flipAntiDiagonal(moves);
             aFileAttacks[x][perm.friendsTreatAsOcc][perm.enemiesTreatAsEmpties] |= i;
             for (int y = 0; y < 8; y++) {
-                unsigned long shiftedMoves = moves << (8u * y);
+                uint64_t shiftedMoves = moves << (8u * y);
                 fillUpAttacks[x][perm.friendsTreatAsOcc][perm.enemiesTreatAsEmpties] |= shiftedMoves;
             }
         }
@@ -59,12 +59,12 @@ void setupAttacksDatabase() {
 }
 
 
-const unsigned long k1 = 0x5500550055005500;
-const unsigned long k2 = 0x3333000033330000;
-const unsigned long k4 = 0x0f0f0f0f00000000;
+const uint64_t k1 = 0x5500550055005500;
+const uint64_t k2 = 0x3333000033330000;
+const uint64_t k4 = 0x0f0f0f0f00000000;
 
-unsigned long flipAntiDiagonal(unsigned long x) {
-    unsigned long t;
+uint64_t flipAntiDiagonal(uint64_t x) {
+    uint64_t t;
     t = k4 & (x ^ (x << 28u));
     x ^= t ^ (t >> 28u);
     t = k2 & (x ^ (x << 14u));
@@ -74,12 +74,12 @@ unsigned long flipAntiDiagonal(unsigned long x) {
     return x;
 }
 
-const unsigned long kk1 = 0xaa00aa00aa00aa00;
-const unsigned long kk2 = 0xcccc0000cccc0000;
-const unsigned long kk4 = 0xf0f0f0f00f0f0f0f;
+const uint64_t kk1 = 0xaa00aa00aa00aa00;
+const uint64_t kk2 = 0xcccc0000cccc0000;
+const uint64_t kk4 = 0xf0f0f0f00f0f0f0f;
 
-unsigned long flipDiagonal(unsigned long x) {
-    unsigned long t;
+uint64_t flipDiagonal(uint64_t x) {
+    uint64_t t;
     t = x ^ (x << 36u);
     x ^= kk4 & (t ^ (x >> 36u));
     t = kk2 & (x ^ (x << 18u));
@@ -89,10 +89,10 @@ unsigned long flipDiagonal(unsigned long x) {
     return x;
 }
 
-unsigned long *allLongInStar(unsigned long *indexes, unsigned long star) {
+uint64_t *allLongInStar(uint64_t *indexes, uint64_t star) {
     int index = 0;
     while (star) {
-        unsigned long p = star & -star;
+        uint64_t p = star & -star;
         indexes[++index] = p;
         star &= star - 1;
     }
@@ -101,13 +101,13 @@ unsigned long *allLongInStar(unsigned long *indexes, unsigned long star) {
     return indexes;
 }
 
-Permutation *allPermutationsFromLongs(Permutation *permutations, unsigned long *pieces, unsigned long size) {
+Permutation *allPermutationsFromLongs(Permutation *permutations, uint64_t *pieces, uint64_t size) {
     // we must consider three states:
     // square can be empty, friend, enemy
 
-    for (unsigned int tt = 0; tt < size; tt++) {
+    for (uint32_t tt = 0; tt < size; tt++) {
         Permutation p = {};
-        unsigned int t = tt;
+        uint32_t t = tt;
 
         if ((t % 3) == 0)
             p.emptiesTreatAsDead |= pieces[1];
@@ -190,62 +190,62 @@ Permutation *allPermutationsFromLongs(Permutation *permutations, unsigned long *
     return permutations;
 }
 
-unsigned long fillUpAttacks[8][256][256];
+uint64_t fillUpAttacks[8][256][256];
 
-unsigned long aFileAttacks[8][256][256];
+uint64_t aFileAttacks[8][256][256];
 
-unsigned long diagonalAttacks(unsigned int index, unsigned long friends, unsigned long enemies) {
-    unsigned int f = index & 7u;
-    unsigned long d = DIAGONALS[index];
+uint64_t diagonalAttacks(uint32_t index, uint64_t friends, uint64_t enemies) {
+    uint32_t f = index & 7u;
+    uint64_t d = DIAGONALS[index];
     friends = (d & friends) * H_FILE >> 56u;
     enemies = (d & enemies) * H_FILE >> 56u;
     return d & fillUpAttacks[f][friends][enemies];
 }
 
-unsigned long antiDiagAttacks(unsigned int index, unsigned long friends, unsigned long enemies) {
-    unsigned int f = index & 7u;
-    unsigned long d = ANTI_DIAGONALS[index];
-    unsigned long i = d & friends;
-    unsigned long i1 = i * H_FILE;
+uint64_t antiDiagAttacks(uint32_t index, uint64_t friends, uint64_t enemies) {
+    uint32_t f = index & 7u;
+    uint64_t d = ANTI_DIAGONALS[index];
+    uint64_t i = d & friends;
+    uint64_t i1 = i * H_FILE;
     friends = i1 >> 56u;
     enemies = (d & enemies) * H_FILE >> 56u;
     return d & fillUpAttacks[f][friends][enemies];
 }
 
-unsigned long rankAttacks(unsigned int index, unsigned long friends, unsigned long enemies) {
-    unsigned int f = index & 7u;
-    unsigned long r = RANKS[index];
-    unsigned long i1 = r & friends;
-    unsigned long i2 = i1 * H_FILE;
+uint64_t rankAttacks(uint32_t index, uint64_t friends, uint64_t enemies) {
+    uint32_t f = index & 7u;
+    uint64_t r = RANKS[index];
+    uint64_t i1 = r & friends;
+    uint64_t i2 = i1 * H_FILE;
     friends = i2 >> 56u;
     enemies = (r & enemies) * H_FILE >> 56u;
-    unsigned long i = r & fillUpAttacks[f][friends][enemies];
+    uint64_t i = r & fillUpAttacks[f][friends][enemies];
     return i;
 }
 
 
-const unsigned long hFile = 0x0101010101010101;
-const unsigned long diaga1g8 = 0x0102040810204080ULL;
+const uint64_t hFile = 0x0101010101010101;
+const uint64_t diaga1g8 = 0x0102040810204080ULL;
 
-unsigned long fileAttacks(unsigned int index, unsigned long friends, unsigned long enemies) {
-    unsigned int f = index & 7u;
+uint64_t fileAttacks(uint32_t index, uint64_t friends, uint64_t enemies) {
+    uint32_t f = index & 7u;
     friends = hFile & (friends >> f);
-    unsigned long i2 = diaga1g8 * friends;
+    uint64_t i2 = diaga1g8 * friends;
     friends = i2 >> 56u;
     enemies = hFile & (enemies >> f);
     enemies = (diaga1g8 * enemies) >> 56u;
-    unsigned long i = aFileAttacks[index >> 3u][friends][enemies];
-    unsigned long i1 = i << f;
+    uint64_t i = aFileAttacks[index >> 3u][friends][enemies];
+    uint64_t i1 = i << f;
     return i1;
 }
 
 
-unsigned long getMoveCaptures(unsigned long index, unsigned long friends, unsigned long enemies) {
-    unsigned long answers = 0;
-    const unsigned int f = index & 7u;
+uint64_t getMoveCaptures(uint64_t index, uint64_t friends, uint64_t enemies) {
+    uint64_t answers = 0;
+    const uint32_t f = index & 7u;
 
-    unsigned long friendsTemp = friends;
-    unsigned long enemiesTemp = enemies;
+    uint64_t friendsTemp = friends;
+    uint64_t enemiesTemp = enemies;
 
     // file
     friendsTemp = hFile & (friendsTemp >> f);
@@ -258,7 +258,7 @@ unsigned long getMoveCaptures(unsigned long index, unsigned long friends, unsign
     friendsTemp = friends;
     enemiesTemp = enemies;
 
-    const unsigned long r = RANKS[index];
+    const uint64_t r = RANKS[index];
     friendsTemp = ((r & friendsTemp) * H_FILE) >> 56u;
     enemiesTemp = (r & enemiesTemp) * H_FILE >> 56u;
     answers |= r & fillUpAttacks[f][friendsTemp][enemiesTemp];
@@ -267,7 +267,7 @@ unsigned long getMoveCaptures(unsigned long index, unsigned long friends, unsign
     friendsTemp = friends;
     enemiesTemp = enemies;
 
-    const unsigned long ad = ANTI_DIAGONALS[index];
+    const uint64_t ad = ANTI_DIAGONALS[index];
     friendsTemp = ((ad & friendsTemp) * H_FILE) >> 56u;
     enemiesTemp = (ad & enemiesTemp) * H_FILE >> 56u;
     answers |= ad & fillUpAttacks[f][friendsTemp][enemiesTemp];
@@ -276,7 +276,7 @@ unsigned long getMoveCaptures(unsigned long index, unsigned long friends, unsign
     friendsTemp = friends;
     enemiesTemp = enemies;
 
-    const unsigned long d = DIAGONALS[index];
+    const uint64_t d = DIAGONALS[index];
     friendsTemp = (d & friendsTemp) * H_FILE >> 56u;
     enemiesTemp = (d & enemiesTemp) * H_FILE >> 56u;
     answers |= d & fillUpAttacks[f][friendsTemp][enemiesTemp];
@@ -284,17 +284,17 @@ unsigned long getMoveCaptures(unsigned long index, unsigned long friends, unsign
     return answers;
 }
 
-unsigned long getMoveCapturesHelper(unsigned long piece, unsigned long friends, unsigned long enemies) {
-    unsigned long empties = ~(friends | enemies);
+uint64_t getMoveCapturesHelper(uint64_t piece, uint64_t friends, uint64_t enemies) {
+    uint64_t empties = ~(friends | enemies);
 
-    unsigned long captures = 0;
+    uint64_t captures = 0;
 
     //////////////////////////////////
     /// Rook Style
     //////////////////////////////////
 
-    unsigned long pieceTemp = 0;
-    unsigned long capTemp = 0;
+    uint64_t pieceTemp = 0;
+    uint64_t capTemp = 0;
     pieceTemp = piece & ~L_BORDER;
     if (((pieceTemp = pieceTemp << 1u) & enemies) != 0) {
         capTemp |= pieceTemp;
