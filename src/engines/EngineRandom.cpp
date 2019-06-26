@@ -22,16 +22,16 @@ EngineRandom::EngineRandom(std::string name) {
     this->name = name;
 }
 
-unsigned int EngineRandom::getBestMoveInt(Board &board) {
+uint32_t EngineRandom::getBestMoveInt(Board &board) {
     return getIndexLowestBit(getBestMove(board));
 }
 
-unsigned int EngineRandom::getDisplayScoreOfMove(Board &board){
+int EngineRandom::getDisplayScoreOfMove(Board &board){
     return 0;
 }
 
-unsigned long EngineRandom::getBestMove(Board &board) {
-    unsigned long moves = board.generateLegalMoves();
+uint64_t EngineRandom::getBestMove(Board &board) {
+    uint64_t moves = board.generateLegalMoves();
     int total = popCount(moves);
 
     std::uniform_int_distribution<std::mt19937::result_type> dist(0,total-1);
@@ -45,7 +45,7 @@ unsigned long EngineRandom::getBestMove(Board &board) {
 
     assert(moves);
 
-    unsigned long i1 = popCount(moves) == 1 ? moves : moves & -moves;
+    uint64_t i1 = popCount(moves) == 1 ? moves : moves & -moves;
 
     assert(i1);
 

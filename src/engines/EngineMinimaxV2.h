@@ -16,17 +16,23 @@
 #include "../evaluators/EvalBase.h"
 #include "../evaluators/EvalSimpleCount.h"
 #include "../searchUtils/TimeManagement.h"
+#include "../searchUtils/TranspositionTable.h"
 
-class EngineMinimaxBetter : public EngineBase {
+class EngineMinimaxV2 : public EngineBase {
 private:
     TimePoint timeLimit;
     TimePoint startTime;
     TimePoint stopTime;
-
+    uint64_t aiMoveLong;
+    int aiMoveScore = 0;
+    bool running = false, debug = true;
+    uint64_t movesArray[128][32];
+    uint32_t age = 0;
+    TranspositionTable tt;
 
 public:
 
-    explicit EngineMinimaxBetter(int maxDepth, bool printInfo = false, EvalBase *evaluator = new EvalSimpleCount(),
+    explicit EngineMinimaxV2(int maxDepth, bool printInfo = false, EvalBase *evaluator = new EvalSimpleCount(),
                                  std::string name = "no name given",
                                  TimePoint timeLimit = 1000l);
 
@@ -41,18 +47,22 @@ public:
 
     void fullReset();
 
-    unsigned long getBestMove(Board &board) override;
+    uint64_t getBestMove(Board &board) override;
 
-    unsigned int getBestMoveInt(Board &board) override;
+    uint32_t getBestMoveInt(Board &board) override;
 
-    unsigned int getDisplayScoreOfMove(Board &board) override;
+    int getDisplayScoreOfMove(Board &board) override;
 
-    unsigned long principleVariationSearch(Board &board, int depth, int ply, int alpha, int beta, bool extended,
+    uint64_t principleVariationSearch(Board &board, int depth, int ply, int alpha, int beta, bool extended,
                                            bool passed);
 
-    unsigned long iterativeDeepeningSearch(Board &board);
+    uint64_t iterativeDeepeningSearch(Board &board);
 
     bool stopSearch();
+
+    void reset();
+
+    static uint64_t getNps(long nodes, long time);
 };
 
 

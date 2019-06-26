@@ -2,7 +2,7 @@
 // Created by louis on 6/13/19.
 //
 
-#include "EngineMinimaxBetter.h"
+#include "EngineMinimaxV2.h"
 
 #include <bitset>
 #include <bits/stdc++.h>
@@ -22,13 +22,7 @@
 
 using namespace std;
 
-unsigned long aiMoveLong;
-int aiMoveScore = 0;
-bool running = false;
-unsigned long movesArray[128][32];
-unsigned int age = 0;
-
-EngineMinimaxBetter::EngineMinimaxBetter(int maxDepth, bool printInfo, EvalBase *evaluator, string name,
+EngineMinimaxV2::EngineMinimaxV2(int maxDepth, bool printInfo, EvalBase *evaluator, string name,
                                          TimePoint timeLimit) {
     bool goToDepth = maxDepth != 0;
     this->maxDepth = goToDepth ? maxDepth : absoluteMaxDepth;
@@ -37,18 +31,19 @@ EngineMinimaxBetter::EngineMinimaxBetter(int maxDepth, bool printInfo, EvalBase 
     this->evaluator = evaluator;
     this->name = name;
     this->timeLimit = !goToDepth ? timeLimit : absoluteMaxLimit;
+    this->tt = TranspositionTable();
     fullReset();
 }
 
-unsigned int EngineMinimaxBetter::getBestMoveInt(Board &board) {
+uint32_t EngineMinimaxV2::getBestMoveInt(Board &board) {
     return getIndexLowestBit(getBestMove(board));
 }
 
-unsigned int EngineMinimaxBetter::getDisplayScoreOfMove(Board &board) {
+int EngineMinimaxV2::getDisplayScoreOfMove(Board &board) {
     return aiMoveScore;
 }
 
-unsigned long getNps(long nodes, long time) {
+uint64_t EngineMinimaxV2::getNps(long nodes, long time) {
     if (time == 0) {
         return 0;
     }
@@ -56,20 +51,20 @@ unsigned long getNps(long nodes, long time) {
 }
 
 
-static unsigned long totalNodes = 0;
+static uint64_t totalNodes = 0;
 
-void reset() {
+void EngineMinimaxV2::reset() {
     totalNodes = 0;
     age++;
 }
 
-void EngineMinimaxBetter::fullReset() {
+void EngineMinimaxV2::fullReset() {
     reset();
     age = 0;
-    resetTT();
+    tt.resetTT();
 }
 
-unsigned long EngineMinimaxBetter::getBestMove(Board &board) {
+uint64_t EngineMinimaxV2::getBestMove(Board &board) {
     reset();
 
     aiMoveScore = 0;
@@ -81,7 +76,7 @@ unsigned long EngineMinimaxBetter::getBestMove(Board &board) {
 
     running = true;
 
-    unsigned long rootMoves = board.generateLegalMoves();
+    uint64_t rootMoves = board.generateLegalMoves();
 
     if (popCount(rootMoves) == 0) {
         return PASS_MOVE;
@@ -102,23 +97,19 @@ unsigned long EngineMinimaxBetter::getBestMove(Board &board) {
         cout << "NPS: " << getNps(totalNodes, finalTime) << endl;
     }
 
-    unsigned int moveIndex = getIndexLowestBit(aiMoveLong);
+    uint32_t moveIndex = getIndexLowestBit(aiMoveLong);
 
-    assert(moveIndex >= 0);
-    assert(moveIndex <= 63);
-    assert((rootMoves & aiMoveLong) != 0);
-    if (popCount(aiMoveLong) != 1) {
-        printBoardWithIndexAndLegalMoves(board);
-        printLong(aiMoveLong);
-        cout << board.whitePieces << endl;
-        cout << board.blackPieces << endl;
+    if (debug){
+        assert(moveIndex >= 0);
+        assert(moveIndex <= 63);
+        assert((rootMoves & aiMoveLong) != 0);
+        assert(popCount(aiMoveLong) == 1);
     }
-    assert(popCount(aiMoveLong) == 1);
 
     return aiMoveLong;
 }
 
-bool EngineMinimaxBetter::stopSearch() {
+bool EngineMinimaxV2::stopSearch() {
     if (!running) {
         return true;
     }
@@ -130,15 +121,14 @@ bool EngineMinimaxBetter::stopSearch() {
 }
 
 
-unsigned long EngineMinimaxBetter::iterativeDeepeningSearch(Board &board) {
-    unsigned long bestMove = 0;
-    int aspirationAlphaIndex = 0, aspirationBetaIndex = 0, aspirationScore = 0;
+uint64_t EngineMinimaxV2::iterativeDeepeningSearch(Board &board) {
+    uint64_t bestMove = 0;
+    int aspirationAlphaIndex = 0, aspirationBetaIndex = 0;
     int aspirationValues[]{10, 25, 100}, maxAspirationTries = 3;
 
-    int score = 0, alpha = aspirationScore - aspirationValues[aspirationAlphaIndex],
-            beta = aspirationScore + aspirationValues[aspirationBetaIndex];
-
-    score, alpha = EvalBase::SHORT_MIN, beta = EvalBase::SHORT_MAX;
+    int score = 0,
+            alpha = EvalBase::SHORT_MIN,
+            beta = EvalBase::SHORT_MAX;
 
     int depth = 0;
     bool lastPrint = false;
@@ -151,56 +141,48 @@ unsigned long EngineMinimaxBetter::iterativeDeepeningSearch(Board &board) {
         if (depth > maxDepth) {
             break;
         }
-//        while (running) {
-//
-//            score = principleVariationSearch(board, depth, 0, alpha, beta, false, false);
-//
-//            assert(depth <= maxDepth);
-//
-//            if (score >= EvalBase::CHECKMATE_SCORE) {
-//                assert(aiMoveScore >= EvalBase::CHECKMATE_SCORE);
-//                lastPrint = true;
-//                goto end;
-//            }
-//
-//            if (!running) {
-//                goto end;
-//            }
-//
-//            if (score <= alpha) {
-//                aspirationAlphaIndex++;
-//                if (aspirationAlphaIndex >= maxAspirationTries) {
-//                    alpha = EvalBase::SHORT_MIN;
-//                } else {
-//                    alpha = score - aspirationValues[aspirationAlphaIndex];
-//                }
-//            } else if (score >= beta) {
-//                aspirationBetaIndex++;
-//                if (aspirationBetaIndex >= maxAspirationTries) {
-//                    beta = EvalBase::SHORT_MAX;
-//                } else {
-//                    beta = score + aspirationValues[aspirationBetaIndex];
-//                }
-//            } else {
-//                break;
-//            }
-//        }
 
-
-        score = principleVariationSearch(board, depth, 0, alpha, beta, false, false);
-
-        assert(depth <= maxDepth);
-
-        if (score >= EvalBase::CHECKMATE_SCORE) {
-            assert(aiMoveScore >= EvalBase::CHECKMATE_SCORE);
-            lastPrint = true;
-            goto end;
+        if (depth >= 5) {
+            aspirationAlphaIndex = 0;
+            aspirationBetaIndex = 0;
+            alpha = score - aspirationValues[aspirationAlphaIndex];
+            beta = score + aspirationValues[aspirationBetaIndex];
         }
 
-        if (!running) {
-            goto end;
-        }
+        while (running) {
 
+            score = principleVariationSearch(board, depth, 0, alpha, beta, false, false);
+
+            assert(depth <= maxDepth);
+
+            if (score >= EvalBase::CHECKMATE_SCORE) {
+                assert(aiMoveScore >= EvalBase::CHECKMATE_SCORE);
+                lastPrint = true;
+                goto end;
+            }
+
+            if (!running) {
+                goto end;
+            }
+
+            if (score <= alpha) {
+                aspirationAlphaIndex++;
+                if (aspirationAlphaIndex >= maxAspirationTries) {
+                    alpha = EvalBase::SHORT_MIN;
+                } else {
+                    alpha = score - aspirationValues[aspirationAlphaIndex];
+                }
+            } else if (score >= beta) {
+                aspirationBetaIndex++;
+                if (aspirationBetaIndex >= maxAspirationTries) {
+                    beta = EvalBase::SHORT_MAX;
+                } else {
+                    beta = score + aspirationValues[aspirationBetaIndex];
+                }
+            } else {
+                break;
+            }
+        }
 
         if (printInfo) {
             TimePoint t = now() - this->startTime;
@@ -218,7 +200,6 @@ unsigned long EngineMinimaxBetter::iterativeDeepeningSearch(Board &board) {
     }
 
     end:
-
     if (printInfo) {
         if (lastPrint) {
             TimePoint t = now() - this->startTime;
@@ -232,18 +213,19 @@ unsigned long EngineMinimaxBetter::iterativeDeepeningSearch(Board &board) {
     return bestMove;
 }
 
-unsigned long
-EngineMinimaxBetter::principleVariationSearch(Board &board, int depth, int ply, int alpha, int beta, bool extended,
+uint64_t
+EngineMinimaxV2::principleVariationSearch(Board &board, int depth, int ply, int alpha, int beta, bool extended,
                                               bool passed) {
-    unsigned long moves = board.generateLegalMoves();
-    const unsigned long originalMovesForDebug = moves;
-    unsigned int movesMadeInGame = board.numberOfRealMoves;
+    uint64_t moves = board.generateLegalMoves();
+    const uint64_t originalMovesForDebug = moves;
+    uint32_t movesMadeInGame = board.numberOfRealMoves;
     const int originalAlpha = alpha;
 
-//    unsigned int safeEx = getSafeExtension(board, moves, ply);
-//    unsigned int ex = safeEx != 0 ? 0 : getExtension(board, moves, ply, extended);
+    // have not found any extension to increase strength
+//    uint32_t safeEx = getSafeExtension(board, moves, ply);
+//    uint32_t ex = safeEx != 0 ? 0 : getExtension(board, moves, ply, extended);
 //    extended = ex > 0; // if we extended, do not extend next turn. Else, allow extension next turn.
-//    depth += ex + safeEx;
+//    depth += safeEx + ex;
 
     if (depth <= 0) {
         return evaluator->eval(board, moves);
@@ -251,9 +233,9 @@ EngineMinimaxBetter::principleVariationSearch(Board &board, int depth, int ply, 
 
     const bool PV_NODE = (beta - alpha) != 1;
 
-    Entry *entry = retrieveFromTable(&board);
+    Entry *entry = tt.retrieveFromTable(&board);
 
-    unsigned long bestMove = 0, hashMove = 0;
+    uint64_t bestMove = 0, hashMove = 0;
     int m = 0, score = 0, bestScore = EvalBase::SHORT_MIN, movesMade = 0;
 
     if (entry) {
@@ -291,42 +273,34 @@ EngineMinimaxBetter::principleVariationSearch(Board &board, int depth, int ply, 
         }
     }
 
-    if (hashMove == 0) {
-        assert(!entry);
-    }
-    if (!entry) {
-        assert(hashMove == 0);
-    }
+    if (debug) {
+        if (hashMove == 0) {
+            assert(!entry);
+        }
+        if (!entry) {
+            assert(hashMove == 0);
+        }
 
-    if (hashMove == PASS_MOVE) {
-        assert(moves == 0);
+        if (hashMove == PASS_MOVE) {
+            assert(moves == 0);
+        }
     }
 
     getOrderedMovesAsArray(movesArray[movesMadeInGame], moves, hashMove);
-    unsigned long move = 0;
+    uint64_t move = 0;
     for (m = 1; m < movesArray[movesMadeInGame][0]; m++) {
         move = movesArray[movesMadeInGame][m];
         if (move == 0) {
             break;
         }
 
-        if (hashMove != 0 && m == 1) {
-//            bool mhm = move == hashMove;
-//            if (!mhm){
-//                printBoardWithIndexAndLegalMoves(board);
-//                printLong(move);
-//                printLong(hashMove);
-//            }
-//            assert(mhm);
-        }
-
         bool passingMove = move == PASS_MOVE;
 
         if (passingMove && passed) {
-            unsigned long me = board.getMyPieces();
-            unsigned long u = board.getEnemyPieces();
+            uint64_t me = board.getMyPieces();
+            uint64_t u = board.getEnemyPieces();
 
-            if (true) {
+            if (debug) {
                 assert(board.generateLegalMoves() == 0);
                 board.flipTurn();
                 assert(board.generateLegalMoves() == 0);
@@ -344,7 +318,7 @@ EngineMinimaxBetter::principleVariationSearch(Board &board, int depth, int ply, 
 
         bool cornerMove = (move & CORNERS) != 0;
         bool dangerousAreaMove = (move & GENERAL_CORNER_AREA) != 0;
-        unsigned int moveIndex = getIndexLowestBit(move);
+        uint32_t moveIndex = getIndexLowestBit(move);
 
         bool b = (move == PASS_MOVE) || (originalMovesForDebug & move) != 0;
         if (!b) {
@@ -354,17 +328,22 @@ EngineMinimaxBetter::principleVariationSearch(Board &board, int depth, int ply, 
             printLong(move);
         }
 
-        assert(b);
-        assert(originalMovesForDebug == moves);
-
+        if (debug) {
+            assert(b);
+            assert(originalMovesForDebug == moves);
+        }
 
         board.makeMoveLong(board.turn, move);
         movesMade++;
-        if (!passingMove) {
-            assert(movesMade <= popCount(moves));
-        } else {
-            assert(movesMade == 1);
+
+        if (debug) {
+            if (!passingMove) {
+                assert(movesMade <= popCount(moves));
+            } else {
+                assert(movesMade == 1);
+            }
         }
+
         totalNodes++;
 
         score = alpha + 1;
@@ -395,11 +374,13 @@ EngineMinimaxBetter::principleVariationSearch(Board &board, int depth, int ply, 
             score = -principleVariationSearch(board, depth - 1, ply + 1, -alpha - 1, -alpha, extended, passingMove);
         }
         if (score > alpha) {
-            if (moves == 0) {
-                assert(move == PASS_MOVE);
-            }
-            if (movesMade == 0 && hashMove != 0) {
-                assert(move == hashMove);
+            if (debug) {
+                if (moves == 0) {
+                    assert(move == PASS_MOVE);
+                }
+                if (movesMade == 0 && hashMove != 0) {
+                    assert(move == hashMove);
+                }
             }
             score = -principleVariationSearch(board, depth - 1, ply + 1, -beta, -alpha, extended, passingMove);
         }
@@ -454,7 +435,7 @@ EngineMinimaxBetter::principleVariationSearch(Board &board, int depth, int ply, 
         flag = EXACT;
     }
 
-    addToTableReplaceByDepth(&board, bestMove, bestScore, flag, depth, age);
+    tt.addToTableReplaceByDepth(&board, bestMove, bestScore, flag, depth, age);
 
     return bestScore;
 }

@@ -15,11 +15,13 @@
 #include "MoveUtils.h"
 #include "Move.h"
 
+#include <cstdint>
+
 using namespace std;
 
 
-static unsigned long INITIAL_WHITE = 0x1008000000;
-static unsigned long INITIAL_BLACK = 0x810000000;
+static uint64_t INITIAL_WHITE = 0x1008000000;
+static uint64_t INITIAL_BLACK = 0x810000000;
 
 static Colour INITIAL_TURN = Colour::WHITE;
 
@@ -82,14 +84,14 @@ bool Board::isGameOver() {
     return false;
 }
 
-const unsigned long Board::getMyPieces() const {
+const uint64_t Board::getMyPieces() const {
     if (this->turn == WHITE) {
         return this->whitePieces;
     }
     return this->blackPieces;
 }
 
-const unsigned long Board::getEnemyPieces() const {
+const uint64_t Board::getEnemyPieces() const {
     if (this->turn == BLACK) {
         return this->whitePieces;
     }
@@ -97,79 +99,15 @@ const unsigned long Board::getEnemyPieces() const {
 }
 
 void Board::makeMoveS(string *moveString) {
-    unsigned int index = getMoveFromMoveString(moveString);
-    this->makeMove(this->turn, index);
+    uint32_t index = getMoveFromMoveString(moveString);
+    this->makeMoveLong(this->turn, newPieceOnSquare(index));
 }
 
-void Board::makeMove(unsigned int index) {
-    this->makeMove(this->turn, index);
+void Board::makeMoveLong(uint64_t move) {
+    makeMoveLong(this->turn, move);
 }
 
-void Board::makeMove(Colour t, int index) {
-    setupAttacksDatabase();
-    assert(index >= 0);
-    assert(index <= 63);
-
-    throw runtime_error("");
-
-    this->numberOfRealMoves++;
-    const bool w = t == WHITE;
-    this->flipTurn();
-
-    whiteStackP[masterIndex] = this->whitePieces;
-    blackStackP[masterIndex] = this->blackPieces;
-
-    masterIndex++;
-    unsigned long enemies = !w ? this->whitePieces : this->blackPieces;
-    unsigned long friends = w ? this->whitePieces : this->blackPieces;
-
-    unsigned long piece = newPieceOnSquare(index);
-    unsigned long caps = ::getMoveCaptures(index, friends, enemies);
-
-    assert(caps);
-
-//    unsigned long bw = this->whitePieces;
-//    unsigned long bb = this->blackPieces;
-
-    if (w) {
-//        assert(!(caps & this->whitePieces));
-//        assert((caps | this->blackPieces) == this->blackPieces);
-
-        this->whitePieces |= caps;
-        this->blackPieces ^= caps;
-        this->whitePieces |= piece;
-    } else {
-//        assert(!(caps & this->blackPieces));
-//        assert((caps | this->whitePieces) == this->whitePieces);
-
-        this->blackPieces |= caps;
-        this->whitePieces ^= caps;
-        this->blackPieces |= piece;
-    }
-//    this->flipTurn();
-
-    // check that no pieces have (dis)appeared
-//    unsigned long mw = this->whitePieces;
-//    unsigned long mb = this->blackPieces;
-//    assert(popCount(bw) + popCount(bb) == popCount(mw) + popCount(mb));
-
-
-//    unsigned long aw = this->whitePieces;
-//    unsigned long ab = this->blackPieces;
-//    assert(popCount(bw) + popCount(bb) == popCount(aw) + popCount(ab) - 1);
-//    assert((bw | bb | piece) == (aw | ab));
-//    if (t == WHITE) {
-//        assert(popCount(aw) >= popCount(bw) + 2);
-//        assert(popCount(ab) <= popCount(bb) - 1);
-//    }
-//    if (t == BLACK) {
-//        assert(popCount(ab) >= popCount(bb) + 2);
-//        assert(popCount(aw) <= popCount(bw) - 1);
-//    }
-
-}
-
-void Board::makeMoveLong(Colour t, unsigned long move) {
+void Board::makeMoveLong(Colour t, uint64_t move) {
     assert(move == PASS_MOVE || popCount(move) == 1);
     assert(numberOfRealMoves >= 0);
 
@@ -185,11 +123,11 @@ void Board::makeMoveLong(Colour t, unsigned long move) {
     }
 
     const bool w = t == WHITE;
-    unsigned long enemies = !w ? this->whitePieces : this->blackPieces;
-    unsigned long friends = w ? this->whitePieces : this->blackPieces;
+    const uint64_t enemies = !w ? this->whitePieces : this->blackPieces;
+    const uint64_t friends = w ? this->whitePieces : this->blackPieces;
 
-    unsigned int index = getIndexLowestBit(move);
-    unsigned long caps = ::getMoveCaptures(index, friends, enemies);
+    const uint32_t index = getIndexLowestBit(move);
+    const uint64_t caps = ::getMoveCaptures(index, friends, enemies);
 
     if (!caps) {
         printBoard(*this);
@@ -224,20 +162,20 @@ void Board::unMakeMove() {
     this->flipTurn();
 }
 
-const unsigned long Board::allPieces() const {
+const uint64_t Board::allPieces() const {
     return this->whitePieces | this->blackPieces;
 }
 
 void Board::flipTurn() {
-    this->turn = this->turn == WHITE ? this->turn = BLACK : this->turn = WHITE;
+    this->turn = this->turn == WHITE ? BLACK : WHITE;
 }
 
-unsigned long Board::getEmptySquares() {
+const uint64_t Board::getEmptySquares() {
     return ~this->allPieces();
 }
 
-unsigned long Board::getNeighbourSquares() {
-    const unsigned long p = this->allPieces();
+const uint64_t Board::getNeighbourSquares() {
+    const uint64_t p = this->allPieces();
     // clockwise
     return ~p &
            (((p & ~U_BORDER) << 8u) | ((p & ~U_R_BORDER) << 7u) | ((p & ~R_BORDER) >> 1u) | ((p & ~D_R_BORDER) >> 9u)
@@ -245,46 +183,36 @@ unsigned long Board::getNeighbourSquares() {
             ((p & ~U_L_BORDER) << 9u));
 }
 
-const unsigned long Board::getBorderPieces() const {
-    const unsigned long p = this->allPieces();
+const uint64_t Board::getBorderPieces() const {
+    const uint64_t p = this->allPieces();
     // clockwise
     return p & (~((p & ~U_BORDER) << 8u) | ~((p & ~R_BORDER) >> 1u) | ~((p & ~D_BORDER) >> 8u) | ~((p & ~L_BORDER) << 1u));
 }
 
 
-unsigned long newPieceOnSquare(unsigned int index) {
+uint64_t newPieceOnSquare(uint32_t index) {
     return (1ul << index);
 }
 
-unsigned int getIndexLowestBit(unsigned long b) {
+uint32_t getIndexLowestBit(uint64_t b) {
     __asm__("bsfq %1,%0" : "=r" (b) : "rm" (b));
     return (int) b;
 }
 
-unsigned int getIndexHighestBit(unsigned long b) {
+uint32_t getIndexHighestBit(uint64_t b) {
     __asm__("bsrq %1,%0" :"=r" (b) :"rm" (b));
     return b;
 }
 
-
-//int popCount(unsigned long x) {
-//    int count = 0;
-//    while (x) {
-//        count++;
-//        x &= x - 1;
-//    }
-//    return count;
-//}
-
-int popCount(unsigned long b) {
+int popCount(uint64_t b) {
 //    return __builtin_popcountll(b);
     __asm__("popcntq %1,%0" :"=r" (b) :"rm" (b));
     return (int) b;
 }
 
-unsigned int getMoveFromMoveString(string *moveString) {
+uint32_t getMoveFromMoveString(string *moveString) {
     char &f = (*moveString)[0];
-    int file = (int) (('h' - f) % 8);
+    int file = ('h' - f) % 8;
 
     char &r = (*moveString)[1];
     int row = (r - '0') - 1;
@@ -293,7 +221,7 @@ unsigned int getMoveFromMoveString(string *moveString) {
 }
 
 string Board::getMovesString() {
-    unsigned long m = this->generateLegalMoves();
+    uint64_t m = this->generateLegalMoves();
     if (!m) {
         return "No legal moves from this position";
     }
@@ -308,9 +236,8 @@ string Board::getMovesString() {
     return s;
 }
 
-//todo, should not be part of Board::
-string getMoveStringFromMove(unsigned long l) {
-    unsigned int index = getIndexLowestBit(l);
+string getMoveStringFromMove(uint64_t l) {
+    uint32_t index = getIndexLowestBit(l);
     int file = index % 8;
     char f = 'h' - file;
 
@@ -319,47 +246,47 @@ string getMoveStringFromMove(unsigned long l) {
     return std::string(1, f) + "" + to_string(row);
 }
 
-unsigned long N(unsigned long l) {
+uint64_t N(uint64_t l) {
     return ((l & ~U_BORDER) << 8u);
 }
 
-unsigned long E(unsigned long l) {
+uint64_t E(uint64_t l) {
     return ((l & ~R_BORDER) >> 1u);
 }
 
-unsigned long W(unsigned long l) {
+uint64_t W(uint64_t l) {
     return ((l & ~L_BORDER) << 1u);
 }
 
-unsigned long S(unsigned long l) {
+uint64_t S(uint64_t l) {
     return ((l & ~D_BORDER) >> 8u);
 }
 
-unsigned long NW(unsigned long l) {
+uint64_t NW(uint64_t l) {
     return ((l & ~U_L_BORDER) << 9u);
 }
 
-unsigned long NE(unsigned long l) {
+uint64_t NE(uint64_t l) {
     return ((l & ~U_R_BORDER) << 7u);
 }
 
-unsigned long SW(unsigned long l) {
+uint64_t SW(uint64_t l) {
     return ((l & ~D_L_BORDER) >> 7u);
 }
 
-unsigned long SE(unsigned long l) {
+uint64_t SE(uint64_t l) {
     return ((l & ~D_R_BORDER) >> 9u);
 }
 
-unsigned long Board::generateLegalMoves() {
+uint64_t Board::generateLegalMoves() {
     const bool w = this->turn == WHITE;
-    const unsigned long own = w ? this->whitePieces : this->blackPieces;
-    const unsigned long enemy = !w ? this->whitePieces : this->blackPieces;
-    unsigned long result = 0ull;
+    const uint64_t own = w ? this->whitePieces : this->blackPieces;
+    const uint64_t enemy = !w ? this->whitePieces : this->blackPieces;
+    uint64_t result = 0ull;
     int i;
 
-    unsigned long empty = ~(own | enemy);
-    unsigned long victims = N(own) & enemy;
+    uint64_t empty = ~(own | enemy);
+    uint64_t victims = N(own) & enemy;
     for (i = 0; i < 5; ++i)
         victims |= N(victims) & enemy;
     result |= N(victims);

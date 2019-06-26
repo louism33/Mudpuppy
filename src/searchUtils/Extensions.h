@@ -13,7 +13,7 @@
 #include "../Board.h"
 
 
-unsigned int getExtension(Board &board, unsigned long moves, int ply, bool extended);
-unsigned int getSafeExtension(Board &board, unsigned long moves, int ply);
+uint32_t getExtension(Board &board, uint64_t moves, int ply, bool extended);
+uint32_t getSafeExtension(Board &board, uint64_t moves, int ply);
 
 #endif //OTHELLOPROJECT_EXTENSIONS_H

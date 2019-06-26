@@ -6,7 +6,9 @@
 #define MUDPUPPY_MOVEORDERER_H
 
 
-void getOrderedMovesAsArray(unsigned long *array, unsigned long moves, unsigned long hashMove);
+#include <cstdint>
+
+void getOrderedMovesAsArray(uint64_t *array, uint64_t moves, uint64_t hashMove);
 
 
 #endif //MUDPUPPY_MOVEORDERER_H

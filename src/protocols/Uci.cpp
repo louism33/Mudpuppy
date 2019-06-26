@@ -21,11 +21,16 @@
 #include "Uci.h"
 #include "../searchUtils/TranspositionTable.h"
 #include "../Move.h"
+#include "../evaluators/EvalBase.h"
 
 void sendInfoString(Board *board, int depth, int score, long nps, long time, long pv) {
-    std::string pvString = getPV(board);
+    bool win = score >= EvalBase::CHECKMATE_SCORE;
+    bool loss = score <= EvalBase::IN_CHECKMATE_SCORE;
+    bool normal = !win && !loss;
+    std::string pvString = getPV(board, nullptr);
     std::cout << "info depth " << depth
-    << " score " << score
+    << (win ? " win " : loss ? " loss " : " score ")
+    << (normal ? std::to_string(score) : "")
     << " time " << time
     << " nps " << nps
     << " pv " << pvString
@@ -37,18 +42,18 @@ void sendBestMove(long bestMove) {
     std::cout << "bestmove " << moveString << std::endl;
 }
 
-const unsigned int maxPvLength = 10;
+const uint32_t maxPvLength = 10;
 
-std::string getPV(Board* board){
-    unsigned long bw = board->whitePieces;
-    unsigned long bb = board->blackPieces;
+std::string getPV(Board *board, TranspositionTable *tt) {
+    uint64_t bw = board->whitePieces;
+    uint64_t bb = board->blackPieces;
 
     std::string pv;
     int i = 0;
     for (i = 0; i < maxPvLength; i++) {
-        Entry *entry = retrieveFromTable(board);
+        Entry *entry = tt->retrieveFromTable(board);
         if (entry){
-            unsigned long move = entry->bestMove;
+            uint64_t move = entry->bestMove;
             pv += getMoveStringFromMove(move) + " ";
             board->makeMoveLong(board->turn, move);
         } else {

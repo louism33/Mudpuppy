@@ -20,13 +20,13 @@
 class Perft {
 
 public:
-    static unsigned long getNps(unsigned long nodes, long time);
+    static uint64_t getNps(uint64_t nodes, long time);
 
-    static unsigned long perft(Board *board, int depth, bool passed);
+    static uint64_t perft(Board *board, int depth, bool passed);
 
-    static unsigned long perft(Board *board, int depth);
+    static uint64_t perft(Board *board, int depth);
 
-    static unsigned long splitPerft(Board *board, int depth);
+    static uint64_t splitPerft(Board *board, int depth);
 };
 
 

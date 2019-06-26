@@ -21,6 +21,6 @@ public:
     const static int SHORT_MIN = -32000;
     const static int SHORT_MAX = 32000;
 
-    virtual int eval(const Board &board, unsigned long moves) = 0;
+    virtual int eval(const Board &board, uint64_t moves) = 0;
 };
 #endif //OTHELLOPROJECT_EVALBASE_H

@@ -14,7 +14,7 @@
 #include "EvalBase.h"
 
 class EvalSimpleCount: public EvalBase {
-    int eval(const Board &board, unsigned long moves);
+    int eval(const Board &board, uint64_t moves);
 };
 
 

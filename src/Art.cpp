@@ -184,7 +184,7 @@ std::__cxx11::string getNiceBoardWithIndex(long white, long black, int turn) {
 }
 
 std::__cxx11::string getNiceBoardWithIndexAndLegalMoves(Board &board, long white, long black, int turn) {
-    unsigned long moves = board.generateLegalMoves();
+    uint64_t moves = board.generateLegalMoves();
 
     std::string out_string;
     std::string ss;
@@ -237,7 +237,7 @@ std::__cxx11::string getNiceBoardWithIndexAndLegalMoves(Board &board, long white
 }
 
 std::__cxx11::string getNiceBoardWithIndexAndLegalMovesColour(Board &board, long white, long black, int turn) {
-    unsigned long moves = board.generateLegalMoves();
+    uint64_t moves = board.generateLegalMoves();
 
     std::string out_string;
     std::string ss;

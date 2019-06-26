@@ -10,11 +10,11 @@
 #include "../main.h"
 #include "../Art.h"
 #include "../Board.h"
-#include "../engines/EngineMinimax.h"
+#include "../engines/EngineMinimaxV1.h"
 #include "EvalSimpleCount.h"
 
 
-int EvalSimpleCount::eval(const Board &board, unsigned long moves) {
+int EvalSimpleCount::eval(const Board &board, uint64_t moves) {
     const int num = popCount(board.whitePieces) - popCount(board.blackPieces);
     return board.turn == WHITE ? num : -num;
 }

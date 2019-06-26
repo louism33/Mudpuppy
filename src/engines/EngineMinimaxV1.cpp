@@ -10,42 +10,42 @@
 #include "../main.h"
 #include "../Art.h"
 #include "../Board.h"
-#include "EngineMinimax.h"
+#include "EngineMinimaxV1.h"
 
 using namespace std;
 
-static unsigned long aiMoveLong;
+static uint64_t aiMoveLong;
 static int aiMoveScore;
 
-EngineMinimax::EngineMinimax(int maxDepth, bool print, EvalBase *evaluator, string name) {
+EngineMinimaxV1::EngineMinimaxV1(int maxDepth, bool print, EvalBase *evaluator, string name) {
     this->maxDepth = maxDepth;
     this->print = print;
     this->evaluator = evaluator;
     this->name = name;
 }
 
-unsigned int EngineMinimax::getBestMoveInt(Board &board) {
+uint32_t EngineMinimaxV1::getBestMoveInt(Board &board) {
     return getIndexLowestBit(getBestMove(board));
 }
 
-unsigned int EngineMinimax::getDisplayScoreOfMove(Board &board) {
+int EngineMinimaxV1::getDisplayScoreOfMove(Board &board) {
     return aiMoveScore;
 }
 
-unsigned long getNpsMinimaxBetter(long nodes, long time) {
+uint64_t getNpsMinimaxBetter(long nodes, long time) {
     if (time == 0) {
         return 0;
     }
     return (nodes / time) * 1000;
 }
 
-static unsigned long totalNodes = 0;
+static uint64_t totalNodes = 0;
 
 void resetMinimaxBetter() {
     totalNodes = 0;
 }
 
-unsigned long EngineMinimax::getBestMove(Board &board) {
+uint64_t EngineMinimaxV1::getBestMove(Board &board) {
     resetMinimaxBetter();
 
     aiMoveScore = 0;
@@ -67,7 +67,7 @@ unsigned long EngineMinimax::getBestMove(Board &board) {
         cout << "NPS: " << getNpsMinimaxBetter(totalNodes, finalTime) << "\n" << endl;
     }
 
-    unsigned int moveIndex = getIndexLowestBit(aiMoveLong);
+    uint32_t moveIndex = getIndexLowestBit(aiMoveLong);
 
     if (moveIndex < 0 || moveIndex > 63) {
         printBoardWithIndexAndLegalMoves(board);
@@ -81,9 +81,9 @@ unsigned long EngineMinimax::getBestMove(Board &board) {
     return aiMoveLong;
 }
 
-unsigned long EngineMinimax::iterativeDeepeningSearch(Board &board) {
+uint64_t EngineMinimaxV1::iterativeDeepeningSearch(Board &board) {
 
-    unsigned long bestMove = 0;
+    uint64_t bestMove = 0;
     int bestScore, initialAlpha = EvalBase::SHORT_MIN, initialBeta = EvalBase::SHORT_MAX;
 
     bestScore = principleVariationSearch(board, maxDepth, 0, initialAlpha, initialBeta);
@@ -96,26 +96,26 @@ unsigned long EngineMinimax::iterativeDeepeningSearch(Board &board) {
     return bestMove;
 }
 
-unsigned long EngineMinimax::principleVariationSearch(Board &board, int depth, int ply, int alpha, int beta) {
-    unsigned long moves = board.generateLegalMoves();
+uint64_t EngineMinimaxV1::principleVariationSearch(Board &board, int depth, int ply, int alpha, int beta) {
+    uint64_t moves = board.generateLegalMoves();
 
     if (depth <= 0) {
         return evaluator->eval(board, moves);
     }
 
-    unsigned long move = 0;
-    unsigned long bestMove = 0;
+    uint64_t move = 0;
+    uint64_t bestMove = 0;
     int score = 0, bestScore = EvalBase::SHORT_MIN, movesMade = 0;
 
     if (moves == 0) {
 
         board.flipTurn();
-        unsigned long opponentMoves = board.generateLegalMoves();
+        uint64_t opponentMoves = board.generateLegalMoves();
         board.flipTurn();
 
         if (opponentMoves == 0) {
-            unsigned long m = board.getMyPieces();
-            unsigned long u = board.getEnemyPieces();
+            uint64_t m = board.getMyPieces();
+            uint64_t u = board.getEnemyPieces();
 
             if (m == u) {
                 return EvalBase::DRAW_SCORE;
@@ -146,7 +146,7 @@ unsigned long EngineMinimax::principleVariationSearch(Board &board, int depth, i
 
             assert(move);
 
-            unsigned int moveIndex = getIndexLowestBit(move);
+            uint32_t moveIndex = getIndexLowestBit(move);
 
             board.makeMoveLong(board.turn, move);
             movesMade++;

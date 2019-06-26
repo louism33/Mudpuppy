@@ -12,23 +12,29 @@ enum Flag {
 };
 
 struct Entry {
-    unsigned long bestMove; // todo consider index
+    uint64_t bestMove; // todo consider index
     int score;
     int age;
     Flag flag;
     int depth;
 };
 
-unsigned int getIndex(Board *board, unsigned long hash = 0);
+uint64_t getBoardHash(const Board *board);
 
-unsigned long getBoardHash(const Board *board);
+uint64_t hashPlayer(uint64_t x, bool whiteTurn);
 
-void addToTableReplaceByDepth(Board *board, unsigned long bestMove, int score, Flag flag, int depth, int age);
+class TranspositionTable {
 
-Entry *retrieveFromTable(Board *board);
+public:
 
-unsigned long hashPlayer(unsigned long x, bool whiteTurn);
+    static uint32_t getIndex(Board *board, uint64_t hash = 0);
 
-void resetTT();
+
+    void addToTableReplaceByDepth(Board *board, uint64_t bestMove, int score, Flag flag, int depth, int age);
+
+    Entry *retrieveFromTable(Board *board);
+
+    static void resetTT();
+};
 
 #endif //MUDPUPPY_TRANSPOSITIONTABLE_H

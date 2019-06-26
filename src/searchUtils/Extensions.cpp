@@ -6,13 +6,13 @@
 #include "Extensions.h"
 #include "../BitBoardUtils.h"
 
-unsigned int getExtension(Board &board, unsigned long moves, int ply, bool extended) {
+uint32_t getExtension(Board &board, uint64_t moves, int ply, bool extended) {
     //don't extend root
     if (ply < 1) {
         return 0;
     }
 
-    assert(popCount(moves) > 1);
+//    assert(popCount(moves) > 1);
 
     // extend on passes
     if (extended) {
@@ -33,7 +33,7 @@ unsigned int getExtension(Board &board, unsigned long moves, int ply, bool exten
 }
 
 // extensions which can be safely applied recursively without causing explosions
-unsigned int getSafeExtension(Board &board, unsigned long moves, int ply) {
+uint32_t getSafeExtension(Board &board, uint64_t moves, int ply) {
 
     //don't extend root
     if (ply < 1) {
@@ -42,7 +42,7 @@ unsigned int getSafeExtension(Board &board, unsigned long moves, int ply) {
 
     // extend on passes
     int c = popCount(moves);
-    if (c == 0 || c == 1) {
+    if (c == 1) {
         return 1;
     }
 //    // end of game extension

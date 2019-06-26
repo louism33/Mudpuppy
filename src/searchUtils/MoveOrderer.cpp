@@ -18,7 +18,7 @@
 #include "../Move.h"
 
 // consider changing to dealing with int, and storing score in high bits
-void getOrderedMovesAsArray(unsigned long *array, unsigned long moves, unsigned long hashMove = 0) {
+void getOrderedMovesAsArray(uint64_t *array, uint64_t moves, uint64_t hashMove = 0) {
     int index = 1;
     int c = 1;
 
@@ -45,10 +45,10 @@ void getOrderedMovesAsArray(unsigned long *array, unsigned long moves, unsigned 
             moves ^= hashMove;
         }
 
-        unsigned long cornerMoves = moves & CORNERS; // 2
-        unsigned long bigSpoonMoves = moves & BIG_SPOON_SQUARES; // 3
+        uint64_t cornerMoves = moves & CORNERS; // 2
+        uint64_t bigSpoonMoves = moves & BIG_SPOON_SQUARES; // 3
 
-        unsigned long smallSpoonMoves = moves & LITTLE_SPOON_SQUARES; // 7
+        uint64_t smallSpoonMoves = moves & LITTLE_SPOON_SQUARES; // 7
         moves = moves & ~(CORNERS | BIG_SPOON_SQUARES | LITTLE_SPOON_SQUARES); // 6
 
         while (cornerMoves) {

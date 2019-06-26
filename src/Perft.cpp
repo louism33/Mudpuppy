@@ -12,34 +12,34 @@
 
 using namespace std;
 
-unsigned long Perft::getNps(unsigned long nodes, long time) {
+uint64_t Perft::getNps(uint64_t nodes, long time) {
     if (time == 0) {
         return 0;
     }
     return (nodes / time) * 1000;
 }
 
-unsigned long Perft::splitPerft(Board *board, int depth) {
+uint64_t Perft::splitPerft(Board *board, int depth) {
     std::cout << "Calculating Perft to depth " << depth << std::endl;
 
     chrono::milliseconds startTime = std::chrono::duration_cast<std::chrono::milliseconds>(
             std::chrono::system_clock::now().time_since_epoch()
     );
 
-    unsigned long moves = board->generateLegalMoves();
-    unsigned long total = 0;
+    uint64_t moves = board->generateLegalMoves();
+    uint64_t total = 0;
 
     if (depth <= 1) {
         return popCount(moves) >= 1 ? popCount(moves) : 1;
     }
 
     while (moves) {
-        unsigned long move = moves & -moves;
-        unsigned int moveIndex = getIndexLowestBit(move);
+        uint64_t move = moves & -moves;
+        uint32_t moveIndex = getIndexLowestBit(move);
         const std::string &s = getMoveStringFromMove(move);
         cout << s << ": ";
-        board->makeMove(moveIndex);
-        unsigned long p = perft(board, depth - 1, false);
+        board->makeMoveLong(move);
+        uint64_t p = perft(board, depth - 1, false);
         board->unMakeMove();
         cout << p << endl;
         total += p;
@@ -58,14 +58,14 @@ unsigned long Perft::splitPerft(Board *board, int depth) {
     return total;
 }
 
-unsigned long Perft::perft(Board *board, int depth) {
+uint64_t Perft::perft(Board *board, int depth) {
     std::cout << "Calculating Perft to depth " << depth << std::endl;
 
     chrono::milliseconds startTime = std::chrono::duration_cast<std::chrono::milliseconds>(
             std::chrono::system_clock::now().time_since_epoch()
     );
 
-    unsigned long total = perft(board, depth, false);
+    uint64_t total = perft(board, depth, false);
 
     chrono::milliseconds currentTime = std::chrono::duration_cast<std::chrono::milliseconds>(
             std::chrono::system_clock::now().time_since_epoch()
@@ -79,7 +79,7 @@ unsigned long Perft::perft(Board *board, int depth) {
     return total;
 }
 
-unsigned long Perft::perft(Board *board, int depth, bool passed) {
+uint64_t Perft::perft(Board *board, int depth, bool passed) {
 
     if (depth == 0) {
         return 1;
@@ -89,8 +89,8 @@ unsigned long Perft::perft(Board *board, int depth, bool passed) {
         return i > 0 ? i : 1;
     }
 
-    unsigned long nodes = 0;
-    unsigned long moves = board->generateLegalMoves();
+    uint64_t nodes = 0;
+    uint64_t moves = board->generateLegalMoves();
 
     if (moves == 0) {
         if (passed) {
@@ -103,20 +103,19 @@ unsigned long Perft::perft(Board *board, int depth, bool passed) {
 
     } else {
         while (moves) {
-            unsigned long move = moves & -moves;
-            unsigned long moveIndex = getIndexLowestBit(move);
+            uint64_t move = moves & -moves;
+            uint64_t moveIndex = getIndexLowestBit(move);
 
 //            assert(popCount(move) == 1);
 
-//            unsigned long bw = board->whitePieces;
-//            unsigned long bb = board->blackPieces;
+//            uint64_t bw = board->whitePieces;
+//            uint64_t bb = board->blackPieces;
 //            Colour mover = board->turn;
 
-//            board->makeMove(moveIndex);
-            board->makeMove(board->turn, moveIndex);
+            board->makeMoveLong(board->turn, move);
 
-//            unsigned long aw = board->whitePieces;
-//            unsigned long ab = board->blackPieces;
+//            uint64_t aw = board->whitePieces;
+//            uint64_t ab = board->blackPieces;
 
 //            assert(popCount(aw) + popCount(ab) - 1 == popCount(bw) + popCount(bb));
 //            assert((bw | bb | move) == (aw | ab));

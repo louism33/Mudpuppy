@@ -7,9 +7,9 @@
 
 class Board {
 public:
-    unsigned long whitePieces, blackPieces;
+    uint64_t whitePieces, blackPieces;
     Colour turn;
-    unsigned int numberOfRealMoves = 0;
+    uint32_t numberOfRealMoves = 0;
 
 public:
     Board();
@@ -18,23 +18,19 @@ public:
 
     explicit Board(std::string fen);
 
-    void makeMove(Colour t, int index);
-
-    void makeMove(unsigned int index);
-
     void makeMoveS(std::string *moveString);
 
     void flipTurn();
 
-    const unsigned long allPieces() const;
+    const uint64_t allPieces() const;
 
-    unsigned long getEmptySquares();
+    const uint64_t getEmptySquares();
 
-    unsigned long getNeighbourSquares();
+    const uint64_t getNeighbourSquares();
 
-    const unsigned long getBorderPieces() const;
+    const uint64_t getBorderPieces() const;
 
-    unsigned long generateLegalMoves();
+    uint64_t generateLegalMoves();
 
     std::string getMovesString();
 
@@ -42,28 +38,30 @@ public:
 
     int calculateScore();
 
-    const unsigned long getMyPieces() const;
+    const uint64_t getMyPieces() const;
 
-    const unsigned long getEnemyPieces() const;
+    const uint64_t getEnemyPieces() const;
 
     void unMakeMove();
 
-    void makeMoveLong(Colour t, unsigned long move);
+    void makeMoveLong(Colour t, uint64_t move);
+
+    void makeMoveLong(uint64_t move);
 };
 
-std::string getMoveStringFromMove(unsigned long l);
+std::string getMoveStringFromMove(uint64_t l);
 
-unsigned long newPieceOnSquare(unsigned int index);
+uint64_t newPieceOnSquare(uint32_t index);
 
-unsigned int getIndexLowestBit(unsigned long l);
+uint32_t getIndexLowestBit(uint64_t l);
 
-unsigned int getIndexHighestBit(unsigned long b);
+uint32_t getIndexHighestBit(uint64_t b);
 
-int first_bit(unsigned long long b);
+int first_bit(uint64_t b);
 
-unsigned int getMoveFromMoveString(std::string *moveString);
+uint32_t getMoveFromMoveString(std::string *moveString);
 
-int popCount(unsigned long l);
+int popCount(uint64_t l);
 
 void setup();
 
