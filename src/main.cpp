@@ -24,13 +24,11 @@ using namespace std;
 #pragma ide diagnostic ignored "OCSimplifyInspection"
 
 int main(int argc, char** argv) {
-    mainLoopNBoard();
-    return 0;
+    // todo quiescence for corners
+
     if (argc <= 1) {
 //        playEngineGames();
-//        playPlayerGames();
-
-
+        playPlayerGames();
 
     } else if (strncmp(argv[1], "tests", 5) == 0) {
         cout << "----- running debug tests -----"<<endl;
@@ -39,7 +37,11 @@ int main(int argc, char** argv) {
         speedTests();
     }else if (strncmp(argv[1], "nboard", 6) == 0) {
         cout << "----- preparing mudpuppy to conform to nboard protocol  -----"<<endl;
-        mainLoopNBoard();
+
+        EngineMinimaxV3* engine = new EngineMinimaxV3(0, true, new EvalBasicHeuristics,
+                                                                                                                                        "Engine Minimax Better with BasicHeuristics",
+                                                                                                                                        1000);
+        mainLoopNBoard(engine);
     }
 
 

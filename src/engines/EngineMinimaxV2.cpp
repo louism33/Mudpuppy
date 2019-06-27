@@ -440,7 +440,14 @@ EngineMinimaxV2::principleVariationSearch(Board &board, int depth, int ply, int 
     return bestScore;
 }
 
+void EngineMinimaxV2::setTimeLimitMillis(TimePoint limit) {
+    this->maxDepth = absoluteMaxDepth;
+    this->timeLimit = limit;
+}
 
-
+void EngineMinimaxV2::setDepthLimit(int depth) {
+    this->maxDepth = depth;
+    this->timeLimit = absoluteMaxLimit;
+}
 
 

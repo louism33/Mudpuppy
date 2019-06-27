@@ -29,6 +29,14 @@ long *whiteStackP;
 long *blackStackP;
 int masterIndex = 0;
 
+void Board::reset(){
+    setup();
+    this->blackPieces = INITIAL_BLACK;
+    this->whitePieces = INITIAL_WHITE;
+    this->turn = INITIAL_TURN;
+    masterIndex = 0;
+    this->numberOfRealMoves = 0;
+}
 Board::Board() {
     setup();
     this->blackPieces = INITIAL_BLACK;
@@ -49,10 +57,6 @@ Board::Board(const Board &b) {
 bool boardReady = false;
 
 void setup() {
-//    if (boardReady) {
-//        cout << "board already ready" << endl;
-//        return;
-//    }
     setupStarMask();
     whiteStackP = new long[128];
     blackStackP = new long[128];
@@ -98,6 +102,15 @@ const uint64_t Board::getEnemyPieces() const {
     return this->blackPieces;
 }
 
+void Board::makeMoveSB(string *moveString) {
+    if (*moveString == "PA") {
+        this->makeMoveLong(PASS_MOVE);
+    } else {
+        uint32_t index = getMoveFromMoveStringBig(moveString);
+        this->makeMoveLong(this->turn, newPieceOnSquare(index));
+    }
+}
+
 void Board::makeMoveS(string *moveString) {
     uint32_t index = getMoveFromMoveString(moveString);
     this->makeMoveLong(this->turn, newPieceOnSquare(index));
@@ -111,6 +124,7 @@ void Board::makeMoveLong(Colour t, uint64_t move) {
     assert(move == PASS_MOVE || popCount(move) == 1);
     assert(numberOfRealMoves >= 0);
 
+
     setupAttacksDatabase();
     this->flipTurn();
     whiteStackP[masterIndex] = this->whitePieces;
@@ -122,6 +136,15 @@ void Board::makeMoveLong(Colour t, uint64_t move) {
         return;
     }
 
+    bool b = (move & (this->whitePieces | this->blackPieces)) == 0;
+    if (!b) {
+        cout << "trying to make a move but someone already there" << endl;
+        cout << getMoveStringFromMove(move) << endl;
+        printBoard(*this);
+        printLong(move);
+    }
+    assert(b);
+
     const bool w = t == WHITE;
     const uint64_t enemies = !w ? this->whitePieces : this->blackPieces;
     const uint64_t friends = w ? this->whitePieces : this->blackPieces;
@@ -132,11 +155,13 @@ void Board::makeMoveLong(Colour t, uint64_t move) {
     if (!caps) {
         printBoard(*this);
         printLong(move);
-        cout << (move == PASS_MOVE) <<endl;
+        cout << (move == PASS_MOVE) << endl;
     }
 
-    if (!caps){
+    if (!caps) {
+        cout << "ERROR, no caps found!" << endl;
         printBoardWithIndexAndLegalMoves(*this);
+        cout << "trying to make move: " << endl;
         printLong(move);
     }
     assert(caps);
@@ -158,7 +183,7 @@ void Board::unMakeMove() {
     masterIndex--;
     this->whitePieces = whiteStackP[masterIndex];
     this->blackPieces = blackStackP[masterIndex];
-    
+
     this->flipTurn();
 }
 
@@ -186,7 +211,8 @@ const uint64_t Board::getNeighbourSquares() {
 const uint64_t Board::getBorderPieces() const {
     const uint64_t p = this->allPieces();
     // clockwise
-    return p & (~((p & ~U_BORDER) << 8u) | ~((p & ~R_BORDER) >> 1u) | ~((p & ~D_BORDER) >> 8u) | ~((p & ~L_BORDER) << 1u));
+    return p &
+           (~((p & ~U_BORDER) << 8u) | ~((p & ~R_BORDER) >> 1u) | ~((p & ~D_BORDER) >> 8u) | ~((p & ~L_BORDER) << 1u));
 }
 
 
@@ -220,6 +246,16 @@ uint32_t getMoveFromMoveString(string *moveString) {
     return file + row * 8;
 }
 
+uint32_t getMoveFromMoveStringBig(string *moveString) {
+    char &f = (*moveString)[0];
+    int file = ('H' - f) % 8;
+
+    char &r = (*moveString)[1];
+    int row = (r - '0') - 1;
+
+    return file + row * 8;
+}
+
 string Board::getMovesString() {
     uint64_t m = this->generateLegalMoves();
     if (!m) {
@@ -236,7 +272,23 @@ string Board::getMovesString() {
     return s;
 }
 
+string getMoveStringFromMoveCAP(uint64_t l) {
+    if (l == PASS_MOVE) {
+        return std::string("PA");
+    }
+    uint32_t index = getIndexLowestBit(l);
+    int file = index % 8;
+    char f = 'H' - file;
+
+    int row = 1 + index / 8;
+
+    return std::string(1, f) + "" + to_string(row);
+}
+
 string getMoveStringFromMove(uint64_t l) {
+    if (l == PASS_MOVE) {
+        return std::string("PA");
+    }
     uint32_t index = getIndexLowestBit(l);
     int file = index % 8;
     char f = 'h' - file;
