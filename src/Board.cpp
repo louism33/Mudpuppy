@@ -22,7 +22,7 @@ using namespace std;
 
 static uint64_t INITIAL_WHITE = 0x1008000000;
 static uint64_t INITIAL_BLACK = 0x810000000;
-
+static const string startPosStr = "---------------------------O*------*O---------------------------";
 static Colour INITIAL_TURN = Colour::WHITE;
 
 long *whiteStackP;
@@ -330,7 +330,18 @@ uint64_t Board::generateLegalMoves() {
 }
 
 Board::Board(std::string fen) {
-
-    // todo
+    cout << fen << endl;
+    uint64_t w = 0, b = 0;
+    for (int i = 0; i < fen.length(); i++) {
+        char &c = fen[i];
+        if (c == '-') {
+        } else if (c == 'O') {
+            w |= newPieceOnSquare(i);
+        } else if (c == '*') {
+            b |= newPieceOnSquare(i);
+        }
+    }
+    this->whitePieces = w;
+    this->blackPieces = b;
 }
 

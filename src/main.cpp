@@ -2,6 +2,7 @@
 #include <sstream>
 #include <bitset>
 #include <algorithm>
+#include <cstring>
 #include "main.h"
 #include "Art.h"
 #include "Board.h"
@@ -15,18 +16,33 @@
 #include "Tests.h"
 #include "searchUtils/TranspositionTable.h"
 #include "engines/EngineMinimaxV3.h"
+#include "NBoard.h"
 
 using namespace std;
 
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "OCSimplifyInspection"
 
-int main() {
-//    masterTest();
-//    speedTests();
+int main(int argc, char** argv) {
+    mainLoopNBoard();
+    return 0;
+    if (argc <= 1) {
+//        playEngineGames();
+//        playPlayerGames();
 
-//    playEngineGames();
-    playPlayerGames();
+
+
+    } else if (strncmp(argv[1], "tests", 5) == 0) {
+        cout << "----- running debug tests -----"<<endl;
+        masterTest();
+        cout <<"----- running speed tests -----"<<endl;
+        speedTests();
+    }else if (strncmp(argv[1], "nboard", 6) == 0) {
+        cout << "----- preparing mudpuppy to conform to nboard protocol  -----"<<endl;
+        mainLoopNBoard();
+    }
+
+
 
     return 0;
 }
@@ -210,8 +226,8 @@ int playPlayerGames() {
 //        engine = new EngineMinimaxV2(0, true, new EvalBasicHeuristics, "Engine Minimax with BasicHeuristics", 1000);
         engine = new EngineMinimaxV3(0, true, new EvalBasicHeuristics, "Engine Minimax with BasicHeuristics", 1000);
 
-        cout << "mudpuppy v0.1 by Louis James Mackenzie-Smith" << endl;
-        cout << "id name mudpuppy v0.1" << endl;
+        cout << "mudpuppy v0.2 by Louis James Mackenzie-Smith" << endl;
+        cout << "id name mudpuppy v0.2" << endl;
         cout << "id author Louis James Mackenzie-Smith" << endl;
 
         while (true) {
