@@ -63,6 +63,12 @@ public:
     void reset();
 
     static uint64_t getNps(long nodes, long time);
+
+    void setTimeLimitMillis(TimePoint limit) override;
+
+    void setDepthLimit(int depth) override;
+
+    void setPrint(bool b);
 };
 
 

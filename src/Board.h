@@ -20,6 +20,8 @@ public:
 
     void makeMoveS(std::string *moveString);
 
+    void makeMoveSB(std::string *moveString);
+
     void flipTurn();
 
     const uint64_t allPieces() const;
@@ -47,9 +49,12 @@ public:
     void makeMoveLong(Colour t, uint64_t move);
 
     void makeMoveLong(uint64_t move);
+
+    void reset();
 };
 
 std::string getMoveStringFromMove(uint64_t l);
+std::string getMoveStringFromMoveCAP(uint64_t l);
 
 uint64_t newPieceOnSquare(uint32_t index);
 
@@ -60,6 +65,8 @@ uint32_t getIndexHighestBit(uint64_t b);
 int first_bit(uint64_t b);
 
 uint32_t getMoveFromMoveString(std::string *moveString);
+
+uint32_t getMoveFromMoveStringBig(std::string *moveString);
 
 int popCount(uint64_t l);
 

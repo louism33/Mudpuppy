@@ -439,6 +439,16 @@ EngineMinimaxV3::principleVariationSearch(Board &board, int depth, int ply, int 
 }
 
 
+void EngineMinimaxV3::setTimeLimitMillis(TimePoint limit) {
+    this->maxDepth = absoluteMaxDepth;
+    this->timeLimit = limit;
+}
 
+void EngineMinimaxV3::setDepthLimit(int depth) {
+    this->maxDepth = depth;
+    this->timeLimit = absoluteMaxLimit;
+}
 
-
+void EngineMinimaxV3::setPrint(bool b) {
+    this->printInfo = b;
+}

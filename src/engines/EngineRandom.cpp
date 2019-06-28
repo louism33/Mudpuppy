@@ -52,3 +52,13 @@ uint64_t EngineRandom::getBestMove(Board &board) {
     return i1;
 }
 
+void EngineRandom::setTimeLimitMillis(TimePoint limit) {
+}
+
+void EngineRandom::setDepthLimit(int depth) {
+}
+
+void EngineRandom::setPrint(bool b){
+
+}
+

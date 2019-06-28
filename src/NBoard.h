@@ -6,9 +6,9 @@
 #define MUDPUPPY_NBOARD_H
 
 
-class NBoard {
+#include "Board.h"
+#include "engines/EngineBase.h"
 
-};
-
+void mainLoopNBoard(EngineBase *engine);
 
 #endif //MUDPUPPY_NBOARD_H

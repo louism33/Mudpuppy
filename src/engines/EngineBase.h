@@ -12,6 +12,7 @@
 #include "../Art.h"
 #include "../Board.h"
 #include "EngineBase.h"
+#include "../searchUtils/TimeManagement.h"
 
 class EngineBase{
 public:
@@ -22,6 +23,12 @@ public:
     virtual uint32_t getBestMoveInt(Board &board) = 0;
 
     virtual uint64_t getBestMove(Board &board) = 0;
+
+    virtual void setTimeLimitMillis(TimePoint limit) = 0;
+
+    virtual void setDepthLimit(int depth) = 0;
+
+    virtual void setPrint(bool b) = 0;
 };
 
 #endif //OTHELLOPROJECT_ENGINEBASE_H

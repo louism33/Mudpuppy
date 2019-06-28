@@ -31,6 +31,12 @@ public:
     uint32_t getBestMoveInt(Board &board);
 
     int getDisplayScoreOfMove(Board &board);
+
+    void setTimeLimitMillis(TimePoint limit) override;
+
+    void setDepthLimit(int depth) override;
+
+    void setPrint(bool b);
 };
 
 
