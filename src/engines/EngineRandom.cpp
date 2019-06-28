@@ -58,3 +58,7 @@ void EngineRandom::setTimeLimitMillis(TimePoint limit) {
 void EngineRandom::setDepthLimit(int depth) {
 }
 
+void EngineRandom::setPrint(bool b){
+
+}
+

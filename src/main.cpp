@@ -23,7 +23,7 @@ using namespace std;
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "OCSimplifyInspection"
 
-int main(int argc, char** argv) {
+int main(int argc, char **argv) {
     // todo quiescence for corners
 
     if (argc <= 1) {
@@ -31,19 +31,18 @@ int main(int argc, char** argv) {
         playPlayerGames();
 
     } else if (strncmp(argv[1], "tests", 5) == 0) {
-        cout << "----- running debug tests -----"<<endl;
+        cout << "----- running debug tests -----" << endl;
         masterTest();
-        cout <<"----- running speed tests -----"<<endl;
+        cout << "----- running speed tests -----" << endl;
         speedTests();
-    }else if (strncmp(argv[1], "nboard", 6) == 0) {
-        cout << "----- preparing mudpuppy to conform to nboard protocol  -----"<<endl;
+    } else if (strncmp(argv[1], "nboard", 6) == 0) {
+        cout << "----- preparing mudpuppy to follow nboard protocol  -----" << endl;
 
-        EngineMinimaxV3* engine = new EngineMinimaxV3(0, true, new EvalBasicHeuristics,
-                                                                                                                                        "Engine Minimax Better with BasicHeuristics",
-                                                                                                                                        1000);
+        EngineMinimaxV3 *engine = new EngineMinimaxV3(0, false, new EvalBasicHeuristics,
+                                                      "Engine Minimax Better with BasicHeuristics",
+                                                      1000);
         mainLoopNBoard(engine);
     }
-
 
 
     return 0;
@@ -232,17 +231,46 @@ int playPlayerGames() {
         cout << "id name mudpuppy v0.2" << endl;
         cout << "id author Louis James Mackenzie-Smith" << endl;
 
+
+        string tl, debug;
+        bool enginePrint = false;
+
+        cout << "Engine config:"
+             << endl
+             << "Time Limit per move in milliseconds (write '0' if you want the engine to search to a specific depth):"
+             << endl;
+        std::getline(cin, tl);
+        if (tl == "0") {
+            string dl;
+            cout << "Since we play with no time limit, please specify Depth Limit (1-18ish):" << endl;
+            std::getline(cin, dl);
+            cout << "Setting Depth limit to " << stoi(dl) << endl;
+            engine->setDepthLimit(stoi(dl));
+        } else {
+            cout << "Setting Time limit to " << stoi(tl) << endl;
+            engine->setTimeLimitMillis(stoi(tl));
+        }
+
+        cout << "Do you want the engine to print what it is thinking? y/n:"
+             << endl;
+        std::getline(cin, debug);
+        if (debug == "y" || debug == "Y" || debug == "yes" || debug == "Yes") {
+            enginePrint = true;
+        } else {
+            enginePrint = false;
+        }
+
+        engine->setPrint(enginePrint);
+
         while (true) {
 
             if (board.isGameOver()) {
                 cout << "Game over!";
-//                printBoardWithIndexAndLegalMoves(board);
                 printBoardWithIndexAndLegalMovesColour(board);
                 board.calculateScore();
                 break;
             }
 
-//            printBoardWithIndexAndLegalMoves(board);
             printBoardWithIndexAndLegalMovesColour(board);
 
             uint64_t moves = board.generateLegalMoves();
@@ -267,8 +295,10 @@ int playPlayerGames() {
                     board.makeMoveLong(board.turn, move);
                     break;
                 } else if (userMove == "x") {
+                    engine->setPrint(true);
                     uint64_t move = engine->getBestMove(board);
                     const int aiMoveSore = engine->getDisplayScoreOfMove(board);
+                    engine->setPrint(enginePrint);
                     cout << "Engine suggests move: " + getMoveStringFromMove((move))
                          << ", and suggests this board is worth: " << aiMoveSore
                          << ", the bigger the better (for you) "

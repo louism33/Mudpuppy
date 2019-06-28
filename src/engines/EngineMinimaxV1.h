@@ -35,6 +35,12 @@ public:
     uint64_t principleVariationSearch(Board &board, int depth, int ply, int alpha, int beta);
 
     uint64_t iterativeDeepeningSearch(Board &board);
+
+    void setTimeLimitMillis(TimePoint limit);
+
+    void setDepthLimit(int depth);
+
+    void setPrint(bool b);
 };
 
 void resetMinimaxBetter();

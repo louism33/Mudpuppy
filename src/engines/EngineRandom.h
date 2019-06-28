@@ -35,6 +35,8 @@ public:
     void setTimeLimitMillis(TimePoint limit) override;
 
     void setDepthLimit(int depth) override;
+
+    void setPrint(bool b);
 };
 
 

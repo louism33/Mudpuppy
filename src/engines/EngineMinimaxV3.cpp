@@ -449,3 +449,6 @@ void EngineMinimaxV3::setDepthLimit(int depth) {
     this->timeLimit = absoluteMaxLimit;
 }
 
+void EngineMinimaxV3::setPrint(bool b) {
+    this->printInfo = b;
+}

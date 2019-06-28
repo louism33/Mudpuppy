@@ -27,6 +27,8 @@ public:
     virtual void setTimeLimitMillis(TimePoint limit) = 0;
 
     virtual void setDepthLimit(int depth) = 0;
+
+    virtual void setPrint(bool b) = 0;
 };
 
 #endif //OTHELLOPROJECT_ENGINEBASE_H

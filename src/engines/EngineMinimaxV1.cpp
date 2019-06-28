@@ -182,3 +182,12 @@ uint64_t EngineMinimaxV1::principleVariationSearch(Board &board, int depth, int 
     return bestScore;
 }
 
+void EngineMinimaxV1::setTimeLimitMillis(TimePoint limit) {
+}
+
+void EngineMinimaxV1::setDepthLimit(int depth) {
+}
+
+
+void EngineMinimaxV1::setPrint(bool b) {
+}

@@ -68,6 +68,8 @@ public:
     void setTimeLimitMillis(TimePoint limit);
 
     void setDepthLimit(int depth);
+
+    void setPrint(bool b);
 };
 
 
