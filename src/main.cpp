@@ -227,8 +227,8 @@ int playPlayerGames() {
 //        engine = new EngineMinimaxV2(0, true, new EvalBasicHeuristics, "Engine Minimax with BasicHeuristics", 1000);
         engine = new EngineMinimaxV3(0, true, new EvalBasicHeuristics, "Engine Minimax with BasicHeuristics", 1000);
 
-        cout << "mudpuppy v0.2 by Louis James Mackenzie-Smith" << endl;
-        cout << "id name mudpuppy v0.2" << endl;
+        cout << "mudpuppy v0.3 by Louis James Mackenzie-Smith" << endl;
+        cout << "id name mudpuppy v0.3" << endl;
         cout << "id author Louis James Mackenzie-Smith" << endl;
 
 
